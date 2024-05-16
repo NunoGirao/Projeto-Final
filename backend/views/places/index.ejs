@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locais</title>
+</head>
+<body>
+    <h1>Lista de Locais</h1>
+    <ul>
+        <% places.forEach(place => { %>
+            <li>
+                <a href="/backoffice/places/show/<%= place._id %>"><%= place.name %></a>
+                <form action="/backoffice/places/delete/<%= place._id %>" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        <% }) %>
+    </ul>
+    <a href="/backoffice">Voltar para o backoffice</a>
+</body>
+</html>

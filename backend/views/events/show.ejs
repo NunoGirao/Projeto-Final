@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= event.name %></title>
+</head>
+<body>
+    <h1><%= event.name %></h1>
+    <p>Tipo: <%= event.type %></p>
+    <p>Subtipo: <%= event.subtype %></p>
+    <p>Data: <%= new Date(event.date).toLocaleString() %></p>
+    <p>Preço: <%= event.price %></p>
+    <p>Ocupação: <%= event.occupation %></p>
+    <p>Capacidade: <%= event.capacity %></p>
+    <% if (event.place) { %>
+      <p>Local: <%= event.place.name %></p>
+    <% } else { %>
+      <p>Local: Não especificado</p>
+    <% } %>
+    <% if (event.image) { %>
+      <p>Imagem: <img src="<%= event.image %>" alt="Imagem do Evento" width="200"></p>
+    <% } %>
+    <form action="/api/v1/tickets/purchase" method="POST">
+        <input type="hidden" name="eventId" value="<%= event._id %>">
+        <label for="quantity">Quantidade:</label>
+        <input type="number" id="quantity" name="quantity" min="1" required>
+        <button type="submit">Comprar Bilhete</button>
+    </form>
+    <a href="/backoffice/events/edit/<%= event._id %>">Editar</a>
+    <a href="/backoffice/events">Voltar para a lista de eventos</a>
+</body>
+</html>

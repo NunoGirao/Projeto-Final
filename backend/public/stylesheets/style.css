@@ -1,0 +1,232 @@
+p {
+  font-size: 8vw;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  color: rgb(39, 37, 37);
+}
+
+.container table {
+  width: 360px;
+  margin-bottom: 30px;
+}
+
+.h2_table {
+  margin-top: -150px;
+}
+
+.h1_table{
+  margin-top: -150px;
+}
+
+.h1_form{
+  margin-top: -170px;
+}
+
+.container table tr td {
+  padding: 20px;
+}
+
+.container table tr {
+  text-align: center;
+}
+
+.container table tr td input, .container table tr td textarea {
+  border: solid 1px #dddddd;
+  border-radius: 6px;
+  width: 100%;
+  color: #777777;
+}
+
+.container .list-table {
+  width: 100%;
+  border: solid 2px rgba(253, 253, 253, 0.308);
+  border-spacing: 0;
+}
+
+.container .list-table th {
+  border-bottom: solid 2px rgba(253, 253, 253, 0.308);
+  background-color: rgba(253, 253, 253, 0.308);
+  font-size: larger;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+a {
+  color: white;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+}
+
+.list-table,
+.btn_back,
+.form_create,
+.container  {
+  position: relative;
+  z-index: 1;
+}
+
+.btn_back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn_back:hover {
+  background-color: #0056b3;
+}
+
+.btn_back svg {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.5rem;
+}
+
+.btn_edit {
+  color: #ffffff;
+  font-size: medium;
+  background-color: rgba(0, 255, 128, 0.678);
+  width: 100px;
+  height: 50px;
+  border-color: #ffffff;
+  border-radius: 10px;
+}
+
+.btn_delete {
+  color: #ffffff;
+  font-size: medium;
+  background-color: rgba(255, 0, 0, 0.678);
+  width: 100px;
+  height: 50px;
+  border-color: #ffffff;
+  border-radius: 10px;
+}
+
+.btn_tickets_list{
+  color: blue;
+  background-color: #5e5e5e7a;
+  border-radius: 10px;
+}
+
+.sold_out_p {
+  color: rgba(255, 0, 0, 0.541);
+}
+
+#section_1 {
+  height: calc(100% - 94px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.section-overlay {
+  position: fixed;
+}
+
+/* Login and Signup */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+}
+
+h2 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  padding: 10px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+input[type="submit"] {
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background-color: #3e8e41;
+}
+
+p {
+  font-size: 16px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.create_btn {
+  border-radius: 10px;
+  width: 130px;
+  height: 50px;
+  border-color: #ffffff;
+  border: solid;
+}
+
+.admin_dash {
+  font-size: 8vw;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  color: rgb(39, 37, 37);
+}
+
+.admin-info {
+  color: #F2CC8F;
+  text-transform: none;
+  text-align: justify;
+  font-size: 25px;
+}
+
+.a_yellow {
+  color: #F2CC8F;
+}
+
+.register_a {
+  color: #4CAF50;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  z-index: 1;
+}

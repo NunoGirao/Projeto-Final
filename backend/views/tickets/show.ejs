@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Ticket</title>
+</head>
+<body>
+    <h1>Detalhes do Ticket</h1>
+    <p>Ticket Number: <%= ticket.ticketNumber %></p>
+    <p>Evento: <%= ticket.event.name %></p>
+    <p>Usuário: <%= ticket.user.name %></p>
+    <p>Data de Compra: <%= new Date(ticket.purchaseDate).toLocaleString() %></p>
+    <p>Quantidade: <%= ticket.quantity %></p>
+    <p>Preço Total: <%= ticket.totalPrice %></p>
+    <p>QR Code: <img src="<%= ticket.qrCode %>" alt="QR Code do Ticket"></p>
+    <a href="/backoffice/tickets">Voltar à Lista de Tickets</a>
+</body>
+</html>
