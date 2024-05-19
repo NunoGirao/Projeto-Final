@@ -1,14 +1,62 @@
-import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FaShoppingCart } from "react-icons/fa";
 import logo from "../assets/logo.png";
-import slideshow from "../assets/slideshow.webp";
 
-const NavBar = () => {
-  const topSpacing = 0;
 
+const NavBar = ({ cartCount }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [profile, setProfile] = useState(null); // Store the full profile data
+  const [profilePhoto, setProfilePhoto] = useState(); // Default profile photo
 
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('userToken'); // Use userToken
+    setIsLoggedIn(!!token);
+
+    if (token) {
+      fetchUserProfile(token);
+    }
+  }, []);
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5555/api/users/profile/me', {
+        method: 'GET',
+        headers: {
+          'x-access-token': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(data); // Store the full profile data
+        setProfilePhoto(data.profilePhoto ); // Set the profile photo or default image
+      } else {
+        console.error('Failed to fetch profile');
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userToken'); // Use userToken
+    setIsLoggedIn(false);
+    navigate('/');
+  };
+
+  const handleProfileClick = () => {
+    if (profile && profile.name) {
+      navigate(`/perfil/${profile.name}`);
+    }
+    setShowDropdown(!showDropdown);
+  };
 
   const getBarColor = (path) => {
     switch (path) {
@@ -27,58 +75,49 @@ const NavBar = () => {
 
   const barColor = getBarColor(location.pathname);
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery) {
+      navigate(`/search?query=${searchQuery}`);
+    }
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
-      <nav className="overflow-hidden bg-white">
+      <nav className="bg-white">
         <div className="flex justify-between items-center px-4 py-2">
           <div className="flex items-center ml-20">
-            <div>
-              <Link to="/">
-                <img
-                  src={logo}
-                  alt="Logo"
-                  style={{ width: "80px", height: "40px" }}
-                />
-              </Link>
-            </div>
+            <Link to="/">
+              <img src={logo} alt="Logo" style={{ width: "80px", height: "40px" }} />
+            </Link>
             <div className="flex nav-links ml-4">
-              <Link
-                to="/teatroarte"
-                className="pt-2 px-2 bg-red-400 mr-2 flex flex-col items-center text-white text-xs py-1"
-              >
+              <Link to="/teatroarte" className="pt-2 px-2 bg-red-400 mr-2 flex flex-col items-center text-white text-xs py-1">
                 <span>TEATRO & ARTE</span>
               </Link>
-              <Link
-                to="/musicafestival"
-                className="px-2 bg-blue-700 mr-2 flex flex-col items-center text-white text-xs py-1"
-              >
+              <Link to="/musicafestival" className="px-2 bg-blue-700 mr-2 flex flex-col items-center text-white text-xs py-1">
                 <span>MÚSICA & </span>
                 <span>FESTIVAIS</span>
               </Link>
-              <Link
-                to="/familia"
-                className="pt-2 px-2 bg-yellow-700 mr-2 flex flex-col items-center text-white text-xs py-1"
-              >
+              <Link to="/familia" className="pt-2 px-2 bg-yellow-700 mr-2 flex flex-col items-center text-white text-xs py-1">
                 <span>FAMILIA</span>
               </Link>
-              <Link
-                to="/desportoaventura"
-                className="px-2 bg-red-700 flex flex-col items-center text-white text-xs py-1"
-              >
+              <Link to="/desportoaventura" className="px-2 bg-red-700 flex flex-col items-center text-white text-xs py-1">
                 <span>DESPORTO &</span>
                 <span>AVENTURA</span>
               </Link>
             </div>
           </div>
-          <form className="max-w-md mx-auto">
+          <form className="max-w-md mx-auto" onSubmit={handleSearchSubmit}>
             <div className="flex">
               <div className="relative w-full">
                 <input
                   type="search"
                   id="search-dropdown"
-                  className="block p-2 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-l-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                  className="block p-2 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-l-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Pesquisar..."
                   required
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <button
                   type="submit"
@@ -104,18 +143,37 @@ const NavBar = () => {
               </div>
             </div>
           </form>
-          <div className="flex items-center">
+          <div className="flex items-center relative">
             {isLoggedIn ? (
-              <img
-                src={slideshow}
-                alt="User"
-                style={{
-                  width: "30px",
-                  height: "30px",
-                  marginRight: "10px",
-                  borderRadius: "50%"
-                }}
-              />
+              <>
+                <Link to="/cart" className="relative">
+                  <FaShoppingCart className="text-2xl" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+                <img
+                  src={profilePhoto}
+                  alt="User"
+                  onClick={handleProfileClick}
+                  className="w-8 h-8 ml-4 rounded-full cursor-pointer"
+                />
+                {showDropdown && (
+                  <div className="absolute right-0 mt-60 w-48 bg-white rounded-md shadow-lg py-2 z-50">
+                    <Link to={`/perfil/${profile.name}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Profile</Link>
+                    <Link to="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</Link>
+                    <Link to="/tickets" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">View Tickets</Link>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 <Link to="/login" className="mr-2 text-sm">
@@ -127,10 +185,7 @@ const NavBar = () => {
           </div>
         </div>
       </nav>
-      <div
-        className={`${barColor}`}
-        style={{ height: "5px", width: "100%", marginTop: `${topSpacing}px` }}
-      ></div>
+      <div className={`${barColor}`} style={{ height: "5px", width: "100%", marginTop: "0px" }}></div>
     </div>
   );
 };

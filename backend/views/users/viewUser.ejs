@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View User</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .user-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .user-details {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin-top: 5px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #goBack,
+    #goToDashboard {
+      display: block;
+      margin: 20px auto;
+      text-align: center;
+    }
+
+    #followButton,
+    #unfollowButton {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .profile-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ver Utilizador</h1>
+  <div class="user-container">
+    <img id="profilePhoto" class="profile-photo" src="https://via.placeholder.com/150" alt="Profile Photo">
+    <div class="user-details">
+      <p><strong>Nome:</strong> <span id="userName"></span></p>
+      <p><strong>Email:</strong> <span id="userEmail"></span></p>
+      <p><strong>Função:</strong> <span id="userRole"></span></p>
+      <p><strong>Seguidores:</strong> <span id="userFollowersCount"></span></p>
+      <p><strong>A seguir:</strong> <span id="userFollowingCount"></span></p>
+      <ul id="userFollowersList"></ul>
+      <ul id="userFollowingList"></ul>
+    </div>
+  </div>
+  <button id="followButton">Seguir</button>
+  <button id="unfollowButton">Deixar de Seguir</button>
+  <button id="goBack">Voltar a Utilizadores</button>
+  <button id="goToDashboard">Voltar ao Painel</button>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      const userId = window.location.pathname.split('/').pop();
+      const response = await fetch(`/api/users/${userId}`, {
+        method: 'GET',
+        headers: {
+          'x-access-token': token
+        }
+      });
+
+      if (!response.ok) {
+        alert('Failed to fetch user details');
+        return;
+      }
+
+      const user = await response.json();
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('userRole').textContent = user.role;
+      document.getElementById('userFollowersCount').textContent = user.followers.length;
+      document.getElementById('userFollowingCount').textContent = user.following.length;
+      
+      if (user.profilePhoto) {
+        document.getElementById('profilePhoto').src = user.profilePhoto;
+      }
+
+      const followersList = document.getElementById('userFollowersList');
+      user.followers.forEach(follower => {
+        const li = document.createElement('li');
+        li.textContent = `${follower.name} (${follower.email})`;
+        followersList.appendChild(li);
+      });
+
+      const followingList = document.getElementById('userFollowingList');
+      user.following.forEach(following => {
+        const li = document.createElement('li');
+        li.textContent = `${following.name} (${following.email})`;
+        followingList.appendChild(li);
+      });
+
+      document.getElementById('followButton').addEventListener('click', async function() {
+        try {
+          const response = await fetch(`/api/follow/${userId}/follow`, {
+            method: 'POST',
+            headers: {
+              'x-access-token': token,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+          }
+
+          const result = await response.json();
+          alert(result.message);
+          window.location.reload();
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Failed to follow user: ' + error.message);
+        }
+      });
+
+      document.getElementById('unfollowButton').addEventListener('click', async function() {
+        try {
+          const response = await fetch(`/api/follow/${userId}/unfollow`, {
+            method: 'POST',
+            headers: {
+              'x-access-token': token,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+          }
+
+          const result = await response.json();
+          alert(result.message);
+          window.location.reload();
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Failed to unfollow user: ' + error.message);
+        }
+      });
+
+      document.getElementById('goBack').addEventListener('click', function() {
+        window.location.href = '/admin/users';
+      });
+
+      document.getElementById('goToDashboard').addEventListener('click', function() {
+        window.location.href = '/admin/dashboard';
+      });
+    });
+  </script>
+</body>
+</html>

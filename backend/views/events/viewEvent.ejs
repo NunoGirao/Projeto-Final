@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ver Evento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    div {
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
+    img {
+      max-width: 200px;
+      margin-right: 20px;
+      margin-bottom: 20px;
+      float: left;
+    }
+
+    .ticket {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background-color 0.3s ease;
+      margin-top: 10px;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .ticket:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ver Evento</h1>
+  <div>
+    <p><strong>Nome:</strong> <span id="eventName"></span></p>
+    <p><strong>Categoria:</strong> <span id="eventCategory"></span></p>
+    <p><strong>Subcategoria:</strong> <span id="eventSubcategory"></span></p>
+    <p><strong>Data:</strong> <span id="eventDate"></span></p>
+    <p><strong>Preço:</strong> <span id="eventPrice"></span></p>
+    <p><strong>Ocupação:</strong> <span id="eventOccupation"></span></p>
+    <p><strong>Capacidade:</strong> <span id="eventCapacity"></span></p>
+    <p><strong>Lugar:</strong> <span id="eventPlace"></span></p>
+    <p><strong>Imagem:</strong></p>
+    <div>
+      <img id="eventImage" src="" alt="Event Image">
+    </div>
+    <button id="purchaseTicket" class="ticket">Comprar Bilhete</button>
+    <button id="goBack" class="ticket">Voltar a Eventos</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      const eventId = window.location.pathname.split('/').pop();
+      try {
+        const response = await fetch(`/api/events/${eventId}`, {
+          method: 'GET',
+          headers: {
+            'x-access-token': token
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha ao buscar detalhes do evento');
+        }
+
+        const event = await response.json();
+        document.getElementById('eventName').textContent = event.name;
+        document.getElementById('eventCategory').textContent = event.category;
+        document.getElementById('eventSubcategory').textContent = event.subcategory;
+        document.getElementById('eventDate').textContent = new Date(event.date).toLocaleDateString();
+        document.getElementById('eventPrice').textContent = event.price;
+        document.getElementById('eventOccupation').textContent = event.occupation;
+        document.getElementById('eventCapacity').textContent = event.capacity;
+        document.getElementById('eventPlace').textContent = event.place.name;
+        document.getElementById('eventImage').src = event.image;
+
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Falha ao carregar detalhes do evento. Por favor, tente novamente mais tarde.');
+      }
+
+      document.getElementById('purchaseTicket').addEventListener('click', async function() {
+        try {
+          const response = await fetch(`/api/tickets/purchase/${eventId}`, {
+            method: 'POST',
+            headers: {
+              'x-access-token': token,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+          }
+
+          const result = await response.json();
+          alert(result.message);
+          window.location.reload();
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Falha ao comprar bilhete: ' + error.message);
+        }
+      });
+
+      document.getElementById('goBack').addEventListener('click', function() {
+        window.location.href = '/admin/events';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Place</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    label {
+      color: #666;
+      margin-top: 10px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Editar Lugar</h1>
+    <form id="editPlaceForm">
+      <label for="placeName">Nome:</label>
+      <input type="text" id="placeName" required>
+      <label for="placeAddress">Morada:</label>
+      <input type="text" id="placeAddress" required>
+      <label for="placeCategory">Categoria:</label>
+      <input type="text" id="placeCategory" required>
+      <label for="placeLatitude">Latitude:</label>
+      <input type="text" id="placeLatitude" required>
+      <label for="placeLongitude">Longitude:</label>
+      <input type="text" id="placeLongitude" required>
+      <button type="submit">Guardar alterações</button>
+    </form>
+    <button id="goBack" class="back-button">Voltar a lugares</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      const placeId = window.location.pathname.split('/').pop();
+      const response = await fetch(`/api/places/${placeId}`, {
+        method: 'GET',
+        headers: {
+          'x-access-token': token
+        }
+      });
+
+      const place = await response.json();
+      document.getElementById('placeName').value = place.name;
+      document.getElementById('placeAddress').value = place.address;
+      document.getElementById('placeCategory').value = place.category;
+      document.getElementById('placeLatitude').value = place.latitude;
+      document.getElementById('placeLongitude').value = place.longitude;
+
+      document.getElementById('editPlaceForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const name = document.getElementById('placeName').value;
+        const address = document.getElementById('placeAddress').value;
+        const category = document.getElementById('placeCategory').value;
+        const latitude = document.getElementById('placeLatitude').value;
+        const longitude = document.getElementById('placeLongitude').value;
+
+        const response = await fetch(`/api/places/${placeId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-access-token': token
+          },
+          body: JSON.stringify({ name, address, category, latitude, longitude })
+        });
+
+        const data = await response.json();
+        if (data._id) {
+          alert('Place updated successfully!');
+          window.location.href = '/admin/places';
+        } else {
+          alert('Failed to update place.');
+        }
+      });
+
+      document.getElementById('goBack').addEventListener('click', function() {
+        window.location.href = '/admin/places';
+      });
+    });
+  </script>
+</body>
+</html>

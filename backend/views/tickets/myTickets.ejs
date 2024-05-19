@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Os meus Bilhetes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 10px 0;
+      text-align: left;
+    }
+
+    strong {
+      color: #333;
+    }
+
+    img {
+      display: block;
+      margin: 10px auto; /* Center the QR code */
+      max-width: 100%;
+      height: auto;
+    }
+
+    .special-image {
+      max-width: 200px;
+      margin: 10px auto; /* Center the special image */
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Os meus Bilhetes</h1>
+    <ul id="ticketsList"></ul>
+    <button id="goBack">Voltar ao Painel</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/tickets/user', {
+          method: 'GET',
+          headers: {
+            'x-access-token': token
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch tickets');
+        }
+
+        const tickets = await response.json();
+        const ticketsList = document.getElementById('ticketsList');
+        ticketsList.innerHTML = '';
+
+        tickets.forEach(ticket => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <strong>Event:</strong> ${ticket.name} <br>
+            <strong>Date:</strong> ${new Date(ticket.date).toLocaleDateString()} <br>
+            <strong>Place:</strong> ${ticket.place.name} <br>
+            <strong>Price:</strong> ${ticket.price} <br>
+            <strong>Special Image:</strong> <img src="${ticket.nftImage}" alt="Special Image" class="special-image"> <br>
+            <strong>QR Code:</strong> <img src="${ticket.qrCode}" alt="QR Code"> <br>
+          `;
+          ticketsList.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to load tickets. Please try again later.');
+      }
+
+      document.getElementById('goBack').addEventListener('click', function() {
+        window.location.href = '/admin/dashboard';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,60 +1,109 @@
-const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
+const User = require('../models/User');
 const QRCode = require('qrcode');
 
-exports.showAllTickets = async (req, res) => {
-  try {
-    const tickets = await Ticket.find().populate('event');
-    res.json(tickets);
-  } catch (error) {
-    console.error('Erro ao buscar tickets:', error);
-    res.status(500).send('Erro ao buscar tickets');
-  }
-};
+const ticketController = {};
 
-exports.showTicket = async (req, res) => {
-  const ticketId = req.params.id;
-  try {
-    const ticket = await Ticket.findById(ticketId).populate('event');
-    if (!ticket) {
-      return res.status(404).send('Ticket não encontrado');
+ticketController.purchaseTicket = async (req, res) => {
+    try {
+        const eventId = req.params.id;
+        const userId = req.user._id;
+
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
+        if (event.occupation >= event.capacity) {
+            return res.status(400).json({ message: "No tickets available" });
+        }
+
+        const ticket = { user: userId, purchaseDate: new Date() };
+        event.tickets.push(ticket);
+        event.occupation += 1;
+        await event.save();
+
+        // Generate QR code for the ticket
+        const qrData = `${userId}-${eventId}-${ticket.purchaseDate}`;
+        const qrCode = await QRCode.toDataURL(qrData);
+
+        res.status(200).json({ message: "Ticket purchased successfully", qrCode });
+    } catch (err) {
+        res.status(500).json({ message: "Error purchasing ticket: " + err.message });
     }
-    res.json(ticket);
-  } catch (error) {
-    console.error('Erro ao buscar ticket:', error);
-    res.status(500).send('Erro ao buscar ticket');
-  }
 };
 
-exports.purchaseTicket = async (req, res) => {
-  try {
-    const event = await Event.findById(req.body.eventId);
-    if (!event) {
-      return res.status(404).send('Evento não encontrado');
+ticketController.getUserTickets = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const events = await Event.find({ 'tickets.user': userId }).populate('place');
+
+        // Add QR codes to the response
+        const eventsWithQrCodes = await Promise.all(events.map(async (event) => {
+            const ticket = event.tickets.find(ticket => ticket.user.toString() === userId.toString());
+            const qrData = `${userId}-${event._id}-${ticket.purchaseDate}`;
+            const qrCode = await QRCode.toDataURL(qrData);
+            return {
+                ...event._doc,
+                qrCode,
+                nftImage: event.nftImage // Add the nftImage to the response
+            };
+        }));
+
+        res.status(200).json(eventsWithQrCodes);
+    } catch (err) {
+        res.status(500).json({ message: "Error retrieving tickets: " + err.message });
     }
-
-    const ticketCode = await QRCode.toDataURL(`Ticket for ${event.name}`);
-    const newTicket = new Ticket({
-      event: req.body.eventId,
-      user: req.user._id,
-      code: ticketCode
-    });
-
-    await newTicket.save();
-    res.status(201).json(newTicket);
-  } catch (error) {
-    console.error('Erro ao comprar bilhete:', error);
-    res.status(500).send('Erro ao comprar bilhete');
-  }
 };
 
-exports.cancelTicket = async (req, res) => {
-  const ticketId = req.params.id;
-  try {
-    await Ticket.findByIdAndDelete(ticketId);
-    res.status(204).send();
-  } catch (error) {
-    console.error('Erro ao cancelar ticket:', error);
-    res.status(500).send('Erro ao cancelar ticket');
-  }
+ticketController.searchTickets = async (req, res) => {
+    try {
+        const { query } = req.query;
+        const searchQuery = new RegExp(query, 'i'); // Case-insensitive regex search
+
+        const events = await Event.find({
+            $or: [
+                { name: searchQuery },
+                { type: searchQuery }
+            ]
+        }).populate('place');
+
+        const userIds = await User.find({ name: searchQuery }).select('_id');
+        const userTickets = await Event.find({
+            'tickets.user': { $in: userIds }
+        }).populate('place');
+
+        const combinedResults = [...events, ...userTickets];
+
+        res.status(200).json(combinedResults);
+    } catch (err) {
+        res.status(500).json({ message: "Error searching tickets: " + err.message });
+    }
 };
+
+ticketController.getTicketsByUserId = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Find events where the user has purchased tickets
+        const events = await Event.find({ 'tickets.user': userId }).populate('place');
+
+        // Add QR codes to the response
+        const eventsWithQrCodes = await Promise.all(events.map(async (event) => {
+            const ticket = event.tickets.find(ticket => ticket.user.toString() === userId.toString());
+            const qrData = `${userId}-${event._id}-${ticket.purchaseDate}`;
+            const qrCode = await QRCode.toDataURL(qrData);
+            return {
+                ...event._doc,
+                qrCode,
+                nftImage: event.nftImage // Add the nftImage to the response
+            };
+        }));
+
+        res.status(200).json(eventsWithQrCodes);
+    } catch (err) {
+        res.status500().json({ message: "Error retrieving tickets: " + err.message });
+    }
+};
+
+module.exports = ticketController;

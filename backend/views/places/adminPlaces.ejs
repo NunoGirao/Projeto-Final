@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Places</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    h2 {
+      color: #666;
+      margin-top: 20px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    a {
+      color: #070707;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .edit-button {
+      margin-left: 20px;
+    }
+
+    @media (min-width: 600px) {
+      .button-container {
+        flex-direction: row;
+        justify-content: space-around;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Lugares administrativos</h1>
+
+    <div class="section">
+      <h2>Todos os lugares</h2>
+      <button id="fetchPlaces">Procurar lugares</button>
+      <ul id="placesList"></ul>
+    </div>
+
+    <div class="section">
+      <h2>Criar novo lugar</h2>
+      <button id="goToCreatePlace">Criar lugar</button>
+    </div>
+
+    <div class="section">
+      <button id="goToDashboard">Voltar ao painel</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      document.getElementById('fetchPlaces').addEventListener('click', fetchPlaces);
+      document.getElementById('goToCreatePlace').addEventListener('click', function() {
+        window.location.href = '/admin/places/create';
+      });
+
+      document.getElementById('goToDashboard').addEventListener('click', function() {
+        window.location.href = '/admin/dashboard';
+      });
+
+      async function fetchPlaces() {
+        const response = await fetch('/api/places', {
+          method: 'GET',
+          headers: {
+            'x-access-token': token
+          }
+        });
+
+        const places = await response.json();
+        const placesList = document.getElementById('placesList');
+        placesList.innerHTML = '';
+        places.forEach(place => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <div>
+              <a href="/admin/places/view/${place._id}">${place.name} (${place.address}) - ${place.category}</a>
+            </div>
+            <button class="edit-button" onclick="editPlace('${place._id}')">Edit</button>`;
+          placesList.appendChild(li);
+        });
+      }
+
+      window.editPlace = function(id) {
+        window.location.href = `/admin/places/edit/${id}`;
+      };
+
+      fetchPlaces();
+    });
+  </script>
+</body>
+</html>

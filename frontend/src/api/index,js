@@ -1,0 +1,12 @@
+import axios from 'axios';
+
+export const fetchEventsByCategoryAndSubcategory = async (category, subcategory) => {
+  try {
+    const response = await axios.get('http://localhost:5555/api/events/category', {
+      params: { category, subcategory }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Error fetching events: ' + error.message);
+  }
+};

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Criar Evento</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #333;
+      margin: 10px 0;
+    }
+
+    label {
+      margin-top: 5px;
+      display: block;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    textarea,
+    select,
+    button {
+      width: calc(100% - 20px);
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    form {
+      width: 60%;
+      max-width: 600px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Criar Evento</h1>
+  <form id="createEventForm">
+    <label for="eventName">Nome:</label>
+    <input type="text" id="eventName" required>
+
+    <label for="eventDate">Data:</label>
+    <input type="date" id="eventDate" required>
+
+    <label for="eventPrice">Preço:</label>
+    <input type="number" id="eventPrice" required>
+
+    <label for="eventOccupation">Ocupação:</label>
+    <input type="number" id="eventOccupation" value="0" readonly>
+
+    <label for="eventCapacity">Capacidade:</label>
+    <input type="number" id="eventCapacity" required>
+
+    <label for="eventPlace">Lugar:</label>
+    <select id="eventPlace" required></select>
+
+    <label for="eventCategory">Categoria:</label>
+    <select id="eventCategory" required>
+      <option value="Teatro & Arte">Teatro & Arte</option>
+      <option value="Música & Festivais">Música & Festivais</option>
+      <option value="Família">Família</option>
+      <option value="Desporto & Aventura">Desporto & Aventura</option>
+    </select>
+
+    <label for="eventSubcategory">Subcategoria:</label>
+    <select id="eventSubcategory" required></select>
+
+    <label for="eventDescription">Descrição:</label>
+    <textarea id="eventDescription" required></textarea>
+
+    <label for="eventImage">Imagem:</label>
+    <input type="file" id="eventImage" accept="image/*">
+
+    <label for="eventNftImage">Imagem NFT:</label>
+    <input type="file" id="eventNftImage" accept="image/*">
+
+    <button type="submit">Criar Evento</button>
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      // Fetch places to populate the dropdown
+      const placesResponse = await fetch('/api/places', {
+        method: 'GET',
+        headers: {
+          'x-access-token': token
+        }
+      });
+
+      const places = await placesResponse.json();
+      const eventPlaceDropdown = document.getElementById('eventPlace');
+      places.forEach(place => {
+        const option = document.createElement('option');
+        option.value = place._id;
+        option.textContent = place.name;
+        eventPlaceDropdown.appendChild(option);
+      });
+
+      const subcategories = {
+        'Teatro & Arte': ['Teatro', 'Museus & Exposições', 'Dança'],
+        'Música & Festivais': ['Concertos', 'Festivais'],
+        'Família': ['Parques Temáticos', 'Zoológicos', 'Aquários'],
+        'Desporto & Aventura': ['Desporto', 'Aventuras']
+      };
+
+      const eventCategoryDropdown = document.getElementById('eventCategory');
+      const eventSubcategoryDropdown = document.getElementById('eventSubcategory');
+
+      eventCategoryDropdown.addEventListener('change', function() {
+        const selectedCategory = eventCategoryDropdown.value;
+        const options = subcategories[selectedCategory] || [];
+        eventSubcategoryDropdown.innerHTML = '';
+        options.forEach(subcategory => {
+          const option = document.createElement('option');
+          option.value = subcategory;
+          option.textContent = subcategory;
+          eventSubcategoryDropdown.appendChild(option);
+        });
+      });
+
+      document.getElementById('createEventForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const name = document.getElementById('eventName').value;
+        const date = document.getElementById('eventDate').value;
+        const price = document.getElementById('eventPrice').value;
+        const occupation = document.getElementById('eventOccupation').value;
+        const capacity = document.getElementById('eventCapacity').value;
+        const place = document.getElementById('eventPlace').value;
+        const category = document.getElementById('eventCategory').value;
+        const subcategory = document.getElementById('eventSubcategory').value;
+        const description = document.getElementById('eventDescription').value;
+        const imageFile = document.getElementById('eventImage').files[0];
+        const nftImageFile = document.getElementById('eventNftImage').files[0];
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('date', date);
+        formData.append('price', price);
+        formData.append('occupation', occupation);
+        formData.append('capacity', capacity);
+        formData.append('place', place);
+        formData.append('category', category);
+        formData.append('subcategory', subcategory);
+        formData.append('description', description);
+        if (imageFile) {
+          formData.append('image', imageFile);
+        }
+        if (nftImageFile) {
+          formData.append('nftImage', nftImageFile);
+        }
+
+        const response = await fetch('/api/events', {
+          method: 'POST',
+          headers: {
+            'x-access-token': token
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data._id) {
+          alert('Evento criado com sucesso!');
+          document.getElementById('createEventForm').reset();
+          window.location.href = '/admin/events';
+        } else {
+          alert('Falha ao criar o evento.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

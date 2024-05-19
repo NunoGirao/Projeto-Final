@@ -1,7 +1,10 @@
-const Event = require('../models/Event');
-const Place = require('../models/Place');
 const path = require('path');
+const Event = require('../models/Event');
 const bucket = require('../config/firebase');
+const Place = require('../models/Place');
+const { v4: uuidv4 } = require('uuid');
+
+const eventController = {};
 
 async function uploadImageToFirebase(file) {
   const blob = bucket.file(Date.now() + path.extname(file.originalname));
@@ -13,7 +16,7 @@ async function uploadImageToFirebase(file) {
 
   return new Promise((resolve, reject) => {
     blobStream.on('error', (error) => {
-      reject('Erro ao fazer upload para o Firebase: ' + error);
+      reject('Error uploading to Firebase: ' + error);
     });
 
     blobStream.on('finish', async () => {
@@ -22,7 +25,7 @@ async function uploadImageToFirebase(file) {
         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
         resolve(publicUrl);
       } catch (error) {
-        reject('Erro ao tornar o arquivo público: ' + error);
+        reject('Error making file public: ' + error);
       }
     });
 
@@ -30,108 +33,152 @@ async function uploadImageToFirebase(file) {
   });
 }
 
-exports.showAllEvents = async (req, res) => {
+eventController.searchEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('place');
-    res.render('events/index', { events });
-  } catch (error) {
-    console.error('Erro ao buscar eventos:', error);
-    res.status(500).send('Erro ao buscar eventos');
+    const { query } = req.query;
+    const searchQuery = new RegExp(query, 'i'); // Case-insensitive regex search
+
+    // Find places matching the query
+    const places = await Place.find({ name: searchQuery }).select('_id');
+    
+    // Find events matching the query or associated with the found places
+    const events = await Event.find({
+      $or: [
+        { name: searchQuery },
+        { place: { $in: places } }
+      ]
+    }).populate('place');
+
+    res.status(200).json(events);
+  } catch (err) {
+    console.error("Error searching events:", err); // Log detailed error
+    res.status(500).json({ message: "Error searching events: " + err.message });
   }
 };
 
-exports.showCreateEventForm = async (req, res) => {
+eventController.getEventById = async (req, res) => {
   try {
-    const places = await Place.find();
-    res.render('events/create', { places });
-  } catch (error) {
-    console.error('Erro ao buscar locais:', error);
-    res.status(500).send('Erro ao buscar locais');
+    const event = await Event.findById(req.params.id).populate('place');
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    res.status(200).json(event);
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving event: " + err.message });
   }
 };
 
-exports.createEvent = async (req, res) => {
+eventController.createEvent = async (req, res) => {
   try {
-    const imageUrl = req.file ? await uploadImageToFirebase(req.file) : null;
+    const { name, date, price, occupation, capacity, place, category, subcategory, description } = req.body;
+    let imageUrl = null;
+    let nftImageUrl = null;
+
+    if (req.files && req.files.image) {
+      imageUrl = await uploadImageToFirebase(req.files.image[0]);
+    }
+
+    if (req.files && req.files.nftImage) {
+      nftImageUrl = await uploadImageToFirebase(req.files.nftImage[0]);
+    }
+
     const newEvent = new Event({
-      name: req.body.name,
-      type: req.body.type,
-      subtype: req.body.subtype,
-      date: req.body.date,
-      price: req.body.price,
-      occupation: req.body.occupation,
-      capacity: req.body.capacity,
-      place: req.body.place,
-      image: imageUrl
+      name,
+      date,
+      price,
+      occupation,
+      capacity,
+      place,
+      category,
+      subcategory,
+      description,
+      image: imageUrl,
+      nftImage: nftImageUrl
     });
 
-    await newEvent.save();
-    res.redirect('/backoffice/events');
-  } catch (error) {
-    console.error('Erro ao criar evento:', error);
-    res.status(500).send('Erro ao criar evento: ' + error);
+    const savedEvent = await newEvent.save();
+    res.status(201).json(savedEvent);
+  } catch (err) {
+    res.status(500).json({ message: "Error creating event: " + err.message });
   }
 };
 
-exports.showEditEventForm = async (req, res) => {
-  const eventId = req.params.id;
+eventController.getAllEvents = async (req, res) => {
   try {
-    const event = await Event.findById(eventId).populate('place');
-    const places = await Place.find();
-    res.render('events/edit', { event, places });
-  } catch (error) {
-    console.error('Erro ao buscar evento:', error);
-    res.status(500).send('Erro ao buscar evento');
+    const events = await Event.find().populate('place');
+    res.status(200).send(events);
+  } catch (err) {
+    res.status(500).send("Error retrieving events: " + err.message);
   }
 };
 
-exports.editEvent = async (req, res) => {
-  const eventId = req.params.id;
+eventController.getEventsByCategoryAndSubcategory = async (req, res) => {
   try {
-    const updateData = {
-      name: req.body.name,
-      type: req.body.type,
-      subtype: req.body.subtype,
-      date: req.body.date,
-      price: req.body.price,
-      occupation: req.body.occupation,
-      capacity: req.body.capacity,
-      place: req.body.place
-    };
+    const { category, subcategory } = req.query;
+    const events = await Event.find({ category, subcategory }).populate('place');
+    res.status(200).json(events);
+  } catch (err) {
+    res.status(500).json({ message: "Error retrieving events: " + err.message });
+  }
+};
 
-    if (req.file) {
-      updateData.image = await uploadImageToFirebase(req.file);
+eventController.updateEvent = async (req, res) => {
+  try {
+    const { name, date, price, occupation, capacity, place, category, subcategory, description } = req.body;
+    let imageUrl = null;
+    let nftImageUrl = null;
+
+    if (req.files && req.files.image) {
+      imageUrl = await uploadImageToFirebase(req.files.image[0]);
     }
 
-    await Event.findByIdAndUpdate(eventId, updateData);
-    res.redirect('/backoffice/events');
-  } catch (error) {
-    console.error('Erro ao atualizar evento:', error);
-    res.status(500).send('Erro ao atualizar evento: ' + error);
-  }
-};
-
-exports.showEvent = async (req, res) => {
-  const eventId = req.params.id;
-  try {
-    const event = await Event.findById(eventId).populate('place');
-    if (!event) {
-      return res.status(404).send('Evento não encontrado');
+    if (req.files && req.files.nftImage) {
+      nftImageUrl = await uploadImageToFirebase(req.files.nftImage[0]);
     }
-    res.render('events/show', { event });
-  } catch (error) {
-    console.error('Erro ao buscar evento:', error);
-    res.status(500).send('Erro ao buscar evento');
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        date,
+        price,
+        occupation,
+        capacity,
+        place,
+        category,
+        subcategory,
+        description,
+        image: imageUrl,
+        nftImage: nftImageUrl,
+        updated_at: Date.now(),
+      },
+      { new: true }
+    );
+
+    if (!updatedEvent) return res.status(404).json({ message: "Event not found" });
+    res.status(200).json(updatedEvent);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating event: " + err.message });
   }
 };
 
-exports.deleteEvent = async (req, res) => {
-  const eventId = req.params.id;
+eventController.deleteEvent = async (req, res) => {
   try {
-    await Event.findByIdAndDelete(eventId);
-    res.redirect('/backoffice/events');
-  } catch (error) {
-    console.error('Erro ao deletar evento:', error);
-    res.status(500).send('Erro ao deletar evento');
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) return res.status(404).send("Event not found");
+    res.status(200).send({ message: "Event deleted successfully" });
+  } catch (err) {
+    res.status(500).send("Error deleting event: " + err.message);
   }
 };
+
+eventController.getTopEvents = async (req, res) => {
+  try {
+    console.log('Fetching top events...');
+    const events = await Event.find().sort({ 'tickets.length': -1 }).populate('place');
+    console.log('Top events fetched:', events);
+    res.status(200).send(events);
+  } catch (err) {
+    console.error('Error fetching top events:', err); // Log detailed error
+    res.status(500).send("Error fetching top events: " + err.message);
+  }
+};
+module.exports = eventController;

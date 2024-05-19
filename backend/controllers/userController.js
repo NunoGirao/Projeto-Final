@@ -1,123 +1,163 @@
 const User = require('../models/User');
-const bcrypt = require('bcryptjs');
+const path = require('path');
+const bucket = require('../config/firebase'); // Assuming you have a Firebase setup
 
 const userController = {};
 
-userController.showAll = async (req, res, next) => {
-    try {
-        const users = await User.find();
-        const currentUser = await User.findById(req.user._id); // Obtém o usuário atual
-        res.render('users/index', { users, currentUser });
-    } catch (err) {
-        console.error('Erro ao buscar usuários:', err);
-        res.status(500).send('Erro ao buscar usuários');
-    }
+async function uploadImageToFirebase(file) {
+  const blob = bucket.file(Date.now() + path.extname(file.originalname));
+  const blobStream = blob.createWriteStream({
+    metadata: { contentType: file.mimetype }
+  });
+
+  return new Promise((resolve, reject) => {
+    blobStream.on('error', (error) => reject('Error uploading to Firebase: ' + error));
+    blobStream.on('finish', async () => {
+      try {
+        await blob.makePublic();
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+        resolve(publicUrl);
+      } catch (error) {
+        reject('Error making file public: ' + error);
+      }
+    });
+    blobStream.end(file.buffer);
+  });
+}
+
+userController.getUserProfile = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).send("User not found");
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(500).send("Error retrieving user profile: " + err.message);
+  }
 };
 
-userController.show = async (req, res, next) => {
-    try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).send('Usuário não encontrado');
-        }
-        const currentUser = await User.findById(req.user._id); // Obtém o usuário atual
-        res.render('users/show', { user, currentUser });
-    } catch (err) {
-        console.error('Erro ao buscar usuário:', err);
-        res.status(500).send('Erro ao buscar usuário');
+userController.updateProfilePhoto = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
     }
+    const profilePhotoUrl = await uploadImageToFirebase(req.file);
+    const user = await User.findByIdAndUpdate(userId, { profilePhoto: profilePhotoUrl }, { new: true });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("Error updating profile photo:", err);
+    res.status(500).json({ message: 'Error updating profile photo: ' + err.message });
+  }
 };
 
-userController.edit = async (req, res, next) => {
-    try {
-        const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).send('Usuário não encontrado');
-        }
-        res.render('users/edit', { user });
-    } catch (err) {
-        console.error('Erro ao buscar usuário:', err);
-        res.status(500).send('Erro ao buscar usuário');
-    }
+userController.searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const searchQuery = new RegExp(query, 'i'); // Case-insensitive regex search
+
+    const users = await User.find({ 
+      $or: [
+        { name: searchQuery },
+        { email: searchQuery }
+      ]
+    }).select('name email profilePhoto');
+
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: 'Error searching users: ' + err.message });
+  }
 };
 
-userController.update = async (req, res, next) => {
-    try {
-        const userId = req.params.id;
-        const updateData = {
-            name: req.body.name,
-            email: req.body.email,
-            role: req.body.role
-        };
-
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).send('Usuário não encontrado');
-        }
-
-        if (req.body.oldPassword && req.body.newPassword) {
-            const passwordIsValid = bcrypt.compareSync(req.body.oldPassword, user.password);
-            if (!passwordIsValid) {
-                return res.status(401).send('Senha antiga inválida');
-            }
-            const hashedNewPassword = bcrypt.hashSync(req.body.newPassword, 8);
-            updateData.password = hashedNewPassword;
-        }
-
-        await User.findByIdAndUpdate(userId, updateData);
-        res.redirect('/backoffice/users');
-    } catch (err) {
-        console.error('Erro ao atualizar usuário:', err);
-        res.status(500).send('Erro ao atualizar usuário');
-    }
+userController.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).send(users);
+  } catch (err) {
+    res.status(500).send("Error retrieving users: " + err.message);
+  }
 };
 
-userController.delete = async (req, res, next) => {
-    try {
-        await User.findByIdAndDelete(req.params.id);
-        res.redirect('/backoffice/users');
-    } catch (err) {
-        console.error('Erro ao deletar usuário:', err);
-        res.status(500).send('Erro ao deletar usuário');
-    }
+userController.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).send("User not found");
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(500).send("Error retrieving user: " + err.message);
+  }
 };
 
-userController.follow = async (req, res, next) => {
-    try {
-        const currentUser = await User.findById(req.user._id);
-        const userToFollow = await User.findById(req.params.id);
-
-        if (!userToFollow || currentUser._id.equals(userToFollow._id)) {
-            return res.status(400).send('Operação inválida');
-        }
-
-        if (!currentUser.following.includes(userToFollow._id)) {
-            currentUser.following.push(userToFollow._id);
-            await currentUser.save();
-        }
-        res.redirect('/backoffice/users');
-    } catch (err) {
-        console.error('Erro ao seguir usuário:', err);
-        res.status(500).send('Erro ao seguir usuário');
-    }
+userController.updateUser = async (req, res) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedUser) return res.status(404).send("User not found");
+    res.status(200).send(updatedUser);
+  } catch (err) {
+    res.status(500).send("Error updating user: " + err.message);
+  }
 };
 
-userController.unfollow = async (req, res, next) => {
-    try {
-        const currentUser = await User.findById(req.user._id);
-        const userToUnfollow = await User.findById(req.params.id);
+userController.createUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const hashedPassword = bcrypt.hashSync(password, 8);
 
-        if (!userToUnfollow || currentUser._id.equals(userToUnfollow._id)) {
-            return res.status(400).send('Operação inválida');
-        }
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
 
-        currentUser.following = currentUser.following.filter(userId => !userId.equals(userToUnfollow._id));
-        await currentUser.save();
-        res.redirect('/backoffice/users');
-    } catch (err) {
-        console.error('Erro ao deixar de seguir usuário:', err);
-        res.status(500).send('Erro ao deixar de seguir usuário');
-    }
+    const savedUser = await newUser.save();
+    res.status(201).send(savedUser);
+  } catch (err) {
+    res.status(500).send("Error creating user: " + err.message);
+  }
+};
+
+userController.deleteUser = async (req, res) => {
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+    if (!deletedUser) return res.status(404).send("User not found");
+    res.status(200).send({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).send("Error deleting user: " + err.message);
+  }
+};
+
+
+userController.getUserByName = async (req, res) => {
+  try {
+    const user = await User.findOne({ name: req.params.name });
+    if (!user) return res.status(404).send("User not found");
+    res.status(200).send(user);
+  } catch (err) {
+    res.status(500).send("Error retrieving user: " + err.message);
+  }
+};
+
+userController.getFollowing = async (req, res) => {
+  try {
+    const user = await User.findOne({ name: req.params.name }).populate('following', 'name profilePhoto');
+    if (!user) return res.status(404).send("User not found");
+    res.status(200).json(user.following);
+  } catch (err) {
+    res.status(500).json({ message: 'Error retrieving following: ' + err.message });
+  }
+};
+
+userController.getFollowers = async (req, res) => {
+  try {
+    const user = await User.findOne({ name: req.params.name }).populate('followers', 'name profilePhoto');
+    if (!user) return res.status(404).send("User not found");
+    res.status(200).json(user.followers);
+  } catch (err) {
+    res.status(500).json({ message: 'Error retrieving followers: ' + err.message });
+  }
 };
 
 module.exports = userController;
