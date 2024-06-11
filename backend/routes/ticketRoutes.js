@@ -1,12 +1,22 @@
+// routes/ticketRoutes.js
+
 const express = require('express');
-const ticketController = require('../controllers/ticketController');
-const verifyUserToken = require('../middleware/authUser'); // or your authentication middleware
+const { 
+  purchaseTicket, 
+  getUserTickets, 
+  searchTickets, 
+  getTicketsByUserId, 
+  getTicketById, 
+  redeemTicket 
+} = require('../controllers/ticketController');
+const verifyUserToken = require('../middleware/authUser');
 
 const router = express.Router();
 
-router.post('/purchase/:id', verifyUserToken, ticketController.purchaseTicket);
-router.get('/user', verifyUserToken, ticketController.getUserTickets);
-router.get('/search', verifyUserToken, ticketController.searchTickets); // Add search route
-router.get('/:id', verifyUserToken, ticketController.getTicketsByUserId);
+router.post('/purchase/:id', verifyUserToken, purchaseTicket);
+router.get('/user', verifyUserToken, getUserTickets);
+router.get('/search', verifyUserToken, searchTickets); // Add search route
+router.get('/:id', verifyUserToken, getTicketById); // Correct this line to get a single ticket by ID
+router.post('/redeem', verifyUserToken, redeemTicket);
 
 module.exports = router;

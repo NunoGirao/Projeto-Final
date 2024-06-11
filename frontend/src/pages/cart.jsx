@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/navbar';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import PaymentForm from '../components/PaymentForm';
+
+const stripePromise = loadStripe('pk_test_51PQPXSRpFnjawKWoat63CmACG9z2GoHGm7KAPX4PY6YHjiHVUJheGLjrQYCfbDerLJ4nhMoti3yhSGf4z6uTk0Ja00JXruQAlj');
 
 const Cart = () => {
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -66,39 +72,30 @@ const Cart = () => {
     }
   };
 
-  const handlePurchase = async () => {
-    const token = localStorage.getItem('userToken');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+  const handlePurchase = () => {
+    setShowPaymentForm(true);
+  };
 
-    try {
-      const response = await fetch('http://localhost:5555/api/cart/purchase', {
-        method: 'POST',
-        headers: {
-          'x-access-token': token,
-        },
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Failed to complete purchase');
-      }
-
-      alert('Purchase successful!');
-      setCart([]);
-      navigate('/');
-    } catch (error) {
-      console.error('Purchase failed:', error); // Improved error logging
-      alert(`Purchase failed: ${error.message}`);
-    }
+  const handlePaymentSuccess = () => {
+    alert('Purchase successful!');
+    setCart([]);
+    setShowPaymentForm(false);
+    navigate('/');
   };
 
   const handleQuantityChange = (eventId, quantity) => {
     setCart(cart.map(item =>
       item.event._id === eventId ? { ...item, quantity: parseInt(quantity) } : item
     ));
+  };
+
+  const totalAmount = cart.reduce((sum, item) => sum + item.event.price * item.quantity, 0);
+
+  const formatCurrency = (amount) => {
+    return amount.toLocaleString('de-DE', {
+      style: 'currency',
+      currency: 'EUR',
+    });
   };
 
   if (loading) {
@@ -126,6 +123,7 @@ const Cart = () => {
                     <div>
                       <h2 className="text-xl font-semibold">{item.event.name}</h2>
                       <p className="text-gray-500">{item.event.description}</p>
+                      <p className="text-gray-700 font-bold">{formatCurrency(item.event.price)}</p>
                       <div className="flex items-center">
                         <label htmlFor={`quantity-${item.event._id}`} className="mr-2">Quantity:</label>
                         <select
@@ -145,22 +143,33 @@ const Cart = () => {
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
                     onClick={() => handleRemove(item.event._id)}
                   >
-                    Remove
+                    Remover
                   </button>
                 </li>
               ))}
             </ul>
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-between items-center mt-6">
+              <h2 className="text-2xl font-bold">Total: {formatCurrency(totalAmount)}</h2>
               <button
                 className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold"
                 onClick={handlePurchase}
               >
-                Purchase
+                Proceder para o pagamento
               </button>
             </div>
           </div>
         )}
       </div>
+      {showPaymentForm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h2 className="text-2xl mb-4">Complete your payment</h2>
+            <Elements stripe={stripePromise}>
+              <PaymentForm amount={totalAmount} onPaymentSuccess={handlePaymentSuccess} />
+            </Elements>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -47,7 +47,6 @@ const SignUp = () => {
 
   return (
     <div>
-      <NavBar />
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-80">
           <h2 className="text-2xl mb-4">Sign Up</h2>

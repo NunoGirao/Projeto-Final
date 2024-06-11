@@ -1,47 +1,9 @@
 const mongoose = require('mongoose');
 
-const EventSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-    },
-    type: {
-        type: String,
-        required: true,
-    },
-    subtype: {
-      type: String,
-      required: true,
-    },
-    date: {
-        type: Date,
-        required: true,
-    },
-    price: {
-        type: Number,
-        required: true,
-    },
-    occupation: {
-        type: Number,
-        required: true,
-    },
-    capacity: {
-        type: Number,
-        required: true,
-    },
-    place: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Place",
-        required: true
-    },
-    image: {
-        type: String,
-    },
-    tickets: [{
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        purchaseDate: { type: Date, default: Date.now }
-    }],
-    updated_at: { type: Date, default: Date.now },
-});
+const TicketSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  purchaseDate: { type: Date, default: Date.now },
+  qrCode: { type: String },
+}, { _id: true });
 
-module.exports = mongoose.model('Event', EventSchema);
+module.exports = mongoose.model('Ticket', TicketSchema);

@@ -12,7 +12,7 @@ const Home = () => {
   useEffect(() => {
     const fetchTopEvents = async () => {
       try {
-        const response = await fetch('http://localhost:5555/api/events/top-events'); // Correct endpoint
+        const response = await fetch('http://localhost:5555/api/events/top-events'); // Corrigir endpoint
         if (!response.ok) {
           throw new Error('Failed to fetch top events');
         }
@@ -43,12 +43,12 @@ const Home = () => {
   
 
   const updateCartCount = async () => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('userToken');
     if (token) {
       try {
         const response = await fetch('http://localhost:5555/api/cart', {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'x-access-token': token,
           }
         });
         if (response.ok) {
@@ -117,7 +117,7 @@ const Home = () => {
     top: 0,
     left: 0,
     transform: index === current ? "translateX(0)" : index < current ? "translateX(-100%)" : "translateX(100%)",
-    opacity: index === current ? 1 : 1,
+    opacity: index === current ? 1 : 0,
   });
 
   if (!Array.isArray(slides) || slides.length <= 0) {
@@ -128,17 +128,12 @@ const Home = () => {
     setCurrent(current === 0 ? length - 1 : current - 1);
   };
 
-  if (!Array.isArray(slides) || slides.length <= 0) {
-    return null; // return null if no slides
-  }
-
   const filterEventsByCategory = (category) => {
     return events.filter(event => event.category === category);
   };
 
   return (
     <div>
-      <NavBar cartCount={cartCount} />
       <div>
         <div className="relative overflow-hidden mt-12" style={{ height: "400px" }}>
           <BsChevronCompactLeft

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const ImageBalls = ({ balls, updateCartCount }) => {
   const [hoverIndex, setHoverIndex] = useState(-1);
   const [clickedIndex, setClickedIndex] = useState(-1);
+  const [followingPurchases, setFollowingPurchases] = useState({});
   const navigate = useNavigate();
 
   const handleMouseEnter = (index) => {
@@ -18,8 +19,40 @@ const ImageBalls = ({ balls, updateCartCount }) => {
     }
   };
 
-  const handleClick = (index) => {
+  const handleClick = async (index) => {
     setClickedIndex(clickedIndex === index ? -1 : index);
+    if (clickedIndex !== index) {
+      await fetchFollowingPurchases(balls[index]._id);
+    }
+  };
+
+  const fetchFollowingPurchases = async (eventId) => {
+    try {
+      const token = localStorage.getItem('userToken'); // Retrieve the token from local storage
+
+      if (!token) {
+        throw new Error('Token is missing');
+      }
+
+      const response = await fetch(`http://localhost:5555/api/events/${eventId}/followings-purchases`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-access-token': token, // Set the token in the Authorization header
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch following purchases');
+      }
+
+      const data = await response.json();
+      console.log('Fetched following purchases:', data); // Log the response data
+
+      setFollowingPurchases(prevState => ({ ...prevState, [eventId]: data }));
+    } catch (error) {
+      console.error('Error fetching following purchases:', error);
+    }
   };
 
   const addToCart = async (eventId) => {
@@ -106,6 +139,17 @@ const ImageBalls = ({ balls, updateCartCount }) => {
                   }}
                 >
                   <h2>{ball.name}</h2>
+                  <div className="flex flex-wrap justify-center mb-2">
+                    {followingPurchases[ball._id] && followingPurchases[ball._id].map(following => (
+                      <img
+                        key={following._id}
+                        src={following.profilePhoto}
+                        alt={following.name}
+                        className="w-8 h-8 rounded-full border-2 border-white"
+                        title={following.name}
+                      />
+                    ))}
+                  </div>
                   <div>
                     <button
                       className="bg-green-500 text-white m-1 rounded"

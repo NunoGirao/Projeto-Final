@@ -47,23 +47,21 @@ const Tickets = () => {
 
   return (
     <div>
-      <NavBar />
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-4">My Tickets</h1>
+      <div className="container mx-auto p-6 mt-8">
+        <h1 className="text-4xl font-bold mb-6 text-center">My Tickets</h1>
         {tickets.length === 0 ? (
-          <p>No tickets found</p>
+          <p className="text-center text-lg">No tickets found</p>
         ) : (
-          <ul>
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {tickets.map(ticket => (
-              <li key={ticket._id} className="mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold">{ticket.name}</h2>
-                    <p>{ticket.description}</p>
-                    <p>{new Date(ticket.date).toLocaleDateString()}</p>
-                  </div>
+              <li key={ticket._id} className="bg-white shadow-md rounded-lg overflow-hidden">
+                <img src={ticket.image} alt={ticket.eventName} className="w-full h-48 object-cover" />
+                <div className="p-4">
+                  <h2 className="text-xl font-bold text-gray-800 mb-2">{ticket.eventName}</h2>
+                  <p className="text-gray-600 mb-2">{ticket.eventDescription}</p>
+                  <p className="text-gray-700 font-semibold mb-4">{new Date(ticket.eventDate).toLocaleDateString()}</p>
                   <button
-                    className="bg-blue-500 text-white p-2 rounded"
+                    className="w-full bg-indigo-500 text-white py-2 rounded-md hover:bg-indigo-600 transition duration-300"
                     onClick={() => window.location.href = `/ticket/${ticket._id}`}
                   >
                     View Ticket

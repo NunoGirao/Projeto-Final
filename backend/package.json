@@ -33,6 +33,7 @@
     "path": "^0.12.7",
     "qrcode": "^1.5.3",
     "session": "^0.1.0",
+    "stripe": "^15.10.0",
     "swagger-ui-express": "^5.0.0"
   }
 }

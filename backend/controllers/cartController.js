@@ -1,6 +1,7 @@
 const Cart = require('../models/Cart');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const QRCode = require('qrcode');
 
 const cartController = {};
 
@@ -83,7 +84,11 @@ cartController.purchaseCart = async (req, res) => {
         return res.status(400).json({ message: `Not enough tickets available for ${item.event.name}` });
       }
 
-      item.event.tickets.push({ user: userId, purchaseDate: new Date() });
+      for (let i = 0; i < item.quantity; i++) {
+        const qrData = `${userId}-${item.event._id}-${new Date().toISOString()}`;
+        const qrCode = await QRCode.toDataURL(qrData);
+        item.event.tickets.push({ user: userId, purchaseDate: new Date(), qrCode });
+      }
       item.event.occupation += item.quantity;
       await item.event.save();
     }

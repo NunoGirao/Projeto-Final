@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Event = require('../models/Event');
 const path = require('path');
 const bucket = require('../config/firebase'); // Assuming you have a Firebase setup
 
@@ -31,7 +32,17 @@ userController.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) return res.status(404).send("User not found");
-    res.status(200).send(user);
+
+    // Fetch events with tickets that the user has purchased
+    const events = await Event.find({ 'tickets.user': userId }).select('nftImage');
+
+    // Collect NFT images
+    const nftImages = events.map(event => event.nftImage).filter(Boolean);
+
+    res.status(200).send({
+      ...user.toObject(),
+      nftImages,
+    });
   } catch (err) {
     res.status(500).send("Error retrieving user profile: " + err.message);
   }
@@ -157,6 +168,55 @@ userController.getFollowers = async (req, res) => {
     res.status(200).json(user.followers);
   } catch (err) {
     res.status(500).json({ message: 'Error retrieving followers: ' + err.message });
+  }
+};
+
+// New endpoint to fetch NFT images for a user
+userController.getNftImages = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Fetch events with tickets that the user has purchased
+    const events = await Event.find({ 'tickets.user': userId }).select('nftImage');
+
+    // Collect NFT images
+    const nftImages = events.map(event => event.nftImage).filter(Boolean);
+
+    res.status(200).json({ nftImages });
+  } catch (err) {
+    console.error('Error fetching NFT images:', err);
+    res.status(500).json({ message: 'Error fetching NFT images: ' + err.message });
+  }
+};
+
+userController.processQrCode = async (req, res) => {
+  const { qrData } = req.body;
+  const [userId, eventId] = qrData.split('-'); // Adjust according to your QR code format
+
+  try {
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.nftImages) {
+      user.nftImages = [];
+    }
+
+    // Check if user already has the NFT image to avoid duplicates
+    if (!user.nftImages.includes(event.nftImage)) {
+      user.nftImages.push(event.nftImage);
+      await user.save();
+    }
+
+    res.status(200).json({ message: 'NFT image added to user profile' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error processing QR code: ' + err.message });
   }
 };
 

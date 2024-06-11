@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema({
   profilePhoto: { 
     type: String, 
     default: "https://storage.googleapis.com/pditrabalho.appspot.com/1716126416320.jpg" // Default profile photo URL
+  }, 
+  nftImages: { 
+    type: [String], 
+    default: [] 
   },
   updated_at: {
     type: Date,
