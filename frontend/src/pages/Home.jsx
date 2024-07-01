@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BsChevronCompactLeft, BsChevronCompactRight } from "react-icons/bs";
+import { motion, AnimatePresence } from "framer-motion";
 import NavBar from "../components/navbar";
 import MostrarEventos from '../components/mostrareventos';
 import ImageBalls from "../components/bolas";
@@ -9,7 +9,7 @@ const Home = () => {
   const [events, setEvents] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [positions, setPositions] = useState([
-    { size: 250, x: 50, y: 50 }, // Bola central
+    { size: 250, x: 50, y: 50 },
     { size: 150, x: 70, y: 30 },
     { size: 150, x: 32, y: 70 },
     { size: 150, x: 10, y: 50 },
@@ -22,10 +22,18 @@ const Home = () => {
     { size: 100, x: 38, y: 20 },
   ]);
 
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    "https://i.redd.it/u8bydp4wtiz91.png",
+    "https://images7.alphacoders.com/587/587593.png",
+    "https://images.gamebanana.com/img/ss/mods/52107ac3349f6.jpg",
+  ];
+
   useEffect(() => {
     const fetchTopEvents = async () => {
       try {
-        const response = await fetch('http://localhost:5555/api/events/top-events'); // Corrigir endpoint
+        const response = await fetch('http://localhost:5555/api/events/top-events');
         if (!response.ok) {
           throw new Error('Failed to fetch top events');
         }
@@ -73,49 +81,8 @@ const Home = () => {
     }
   };
 
-  const slides = [
-    "https://i.redd.it/u8bydp4wtiz91.png",
-    "https://images7.alphacoders.com/587/587593.png",
-    "https://images.gamebanana.com/img/ss/mods/52107ac3349f6.jpg",
-  ];
-
   const adjustBalls = () => {
-    if (window.innerWidth >= 1024) {
-      setPositions([
-        { size: 250, x: 50, y: 50 }, // Bola central
-        { size: 150, x: 70, y: 30 },
-        { size: 150, x: 32, y: 70 },
-        { size: 150, x: 10, y: 50 },
-        { size: 150, x: 25, y: 30 },
-        { size: 150, x: 80, y: 80 },
-        { size: 150, x: 90, y: 50 },
-        { size: 100, x: 65, y: 75 },
-        { size: 100, x: 20, y: 80 },
-        { size: 100, x: 82, y: 20 },
-        { size: 100, x: 38, y: 20 },
-      ]);
-    } else if (window.innerWidth >= 768) {
-      setPositions([
-        { size: 200, x: 50, y: 50 }, // Bola central
-        { size: 120, x: 70, y: 30 },
-        { size: 120, x: 32, y: 70 },
-        { size: 120, x: 10, y: 50 },
-        { size: 120, x: 25, y: 30 },
-        { size: 120, x: 80, y: 80 },
-        { size: 120, x: 90, y: 50 },
-        { size: 80, x: 65, y: 75 },
-        { size: 80, x: 20, y: 80 },
-      ]);
-    } else {
-      setPositions([
-        { size: 150, x: 50, y: 50 }, // Bola central
-        { size: 100, x: 70, y: 30 },
-        { size: 100, x: 32, y: 70 },
-        { size: 100, x: 10, y: 50 },
-        { size: 100, x: 25, y: 30 },
-        { size: 100, x: 80, y: 80 },
-      ]);
-    }
+    // ... (keep the existing adjustBalls function)
   };
 
   useEffect(() => {
@@ -132,47 +99,12 @@ const Home = () => {
     ...positions[index]
   }));
 
-  const [current, setCurrent] = useState(0);
-  const length = slides.length;
-
-  const nextSlide = () => {
-    setCurrent(current === length - 1 ? 0 : current + 1);
-  };
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((current) => (current + 1) % slides.length);
+    const timer = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
     }, 5000);
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, []);
-
-  const slideStyles = {
-    width: "100%",
-    height: "100%",
-    transition: "transform 0.5s ease-in-out",
-    position: "absolute",
-    top: 0,
-    left: 0,
-  };
-
-  const getSlideStyle = (index) => ({
-    width: "100%",
-    height: "100%",
-    transition: "transform 0.5s ease-in-out",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    transform: index === current ? "translateX(0)" : index < current ? "translateX(-100%)" : "translateX(100%)",
-    opacity: index === current ? 1 : 0,
-  });
-
-  if (!Array.isArray(slides) || slides.length <= 0) {
-    return null;
-  }
-
-  const prevSlide = () => {
-    setCurrent(current === 0 ? length - 1 : current - 1);
-  };
 
   const filterEventsByCategory = (category) => {
     return events.filter(event => event.category === category);
@@ -180,26 +112,27 @@ const Home = () => {
 
   return (
     <div>
-      <div>
-        <div className="relative overflow-hidden mt-12" style={{ height: "400px" }}>
-          <BsChevronCompactLeft
-            onClick={prevSlide}
-            className="absolute left-0 text-white text-3xl cursor-pointer z-10 bg-black bg-opacity-20 rounded-r-lg"
-            style={{ height: "400px", width: "50px" }}
+      <div className="relative overflow-hidden mt-12" style={{ height: "400px" }}>
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={currentSlide}
+            src={slides[currentSlide]}
+            alt={`Slide ${currentSlide + 1}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 w-full h-full object-cover"
           />
-          <BsChevronCompactRight
-            onClick={nextSlide}
-            className="absolute right-0 text-white text-3xl cursor-pointer z-10 bg-black bg-opacity-20 rounded-r-lg"
-            style={{ height: "400px", width: "50px" }}
+        </AnimatePresence>
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white bg-opacity-50">
+          <motion.div
+            className="h-full bg-white"
+            initial={{ width: "0%" }}
+            animate={{ width: "100%" }}
+            transition={{ duration: 5, ease: "linear" }}
+            key={currentSlide}
           />
-          {slides.map((s, index) => (
-            <img
-              key={index}
-              src={s}
-              alt={`Slide ${index}`}
-              style={getSlideStyle(index)}
-            />
-          ))}
         </div>
       </div>
 

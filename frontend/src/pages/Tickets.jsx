@@ -123,7 +123,7 @@ const Tickets = () => {
     <div className="bg-white min-h-screen">
       <NavBar />
       <div className="container mx-auto p-6 mt-8">
-        <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">My Tickets</h1>
+        <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">Meus Bilhetes</h1>
         
         {tickets.length === 0 ? (
           <div className="text-center bg-gray-50 p-8 rounded-lg shadow">
@@ -139,22 +139,22 @@ const Tickets = () => {
               <div className="relative w-full sm:w-64 mb-4 sm:mb-0">
                 <input
                   type="text"
-                  placeholder="Search tickets..."
+                  placeholder="Procurar bilhetes..."
                   className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  aria-label="Search tickets"
+                  aria-label="Procurar bilhetes"
                 />
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" aria-hidden="true" />
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-gray-600">Sort by:</span>
+                <span className="text-gray-600">Organizar por:</span>
                 <button
                   className={`px-3 py-1 rounded-full flex items-center ${sortConfig.key === 'date' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                   onClick={() => handleSort('date')}
                   aria-label={`Sort by date ${sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : ''}`}
                 >
-                  Date
+                  Data
                   {sortConfig.key === 'date' && (
                     sortConfig.direction === 'asc' ? <FaSortAmountUp className="ml-1" aria-hidden="true" /> : <FaSortAmountDown className="ml-1" aria-hidden="true" />
                   )}
@@ -164,7 +164,7 @@ const Tickets = () => {
                   onClick={() => handleSort('name')}
                   aria-label={`Sort by name ${sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : ''}`}
                 >
-                  Name
+                  Nome
                   {sortConfig.key === 'name' && (
                     sortConfig.direction === 'asc' ? <FaSortAmountUp className="ml-1" aria-hidden="true" /> : <FaSortAmountDown className="ml-1" aria-hidden="true" />
                   )}
@@ -200,7 +200,7 @@ const Tickets = () => {
                         className="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transition duration-300 text-center"
                         aria-label={`View ticket for ${ticket.eventName}`}
                       >
-                        View Ticket
+                        Ver Bilhetes
                       </Link>
                     </div>
                   </div>

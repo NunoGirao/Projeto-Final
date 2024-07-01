@@ -447,7 +447,7 @@ const ProfilePage = () => {
         {uniqueNftImages.length > 0 && (
           <div className="mt-12 relative z-10">
             <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center">
-              <FaPaintBrush className="mr-2" /> {isOwnProfile ? "Minhas Imagens NFT" : `Imagens NFT de ${profile.name}`}
+              <FaPaintBrush className="mr-2" /> {isOwnProfile ? "Lembranças" : `Imagens NFT de ${profile.name}`}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {selectedNftImages.map((nftImage, index) => (

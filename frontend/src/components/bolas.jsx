@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaShoppingCart, FaInfoCircle } from 'react-icons/fa';
 
 const ImageBalls = ({ balls, updateCartCount }) => {
   const [hoverIndex, setHoverIndex] = useState(-1);
@@ -28,27 +29,22 @@ const ImageBalls = ({ balls, updateCartCount }) => {
 
   const fetchFollowingPurchases = async (eventId) => {
     try {
-      const token = localStorage.getItem('userToken'); // Retrieve the token from local storage
-
+      const token = localStorage.getItem('userToken');
       if (!token) {
         throw new Error('Token is missing');
       }
-
       const response = await fetch(`http://localhost:5555/api/events/${eventId}/followings-purchases`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-access-token': token, // Set the token in the Authorization header
+          'x-access-token': token,
         },
       });
-
       if (!response.ok) {
         throw new Error('Failed to fetch following purchases');
       }
-
       const data = await response.json();
-      console.log('Fetched following purchases:', data); // Log the response data
-
+      console.log('Fetched following purchases:', data);
       setFollowingPurchases(prevState => ({ ...prevState, [eventId]: data }));
     } catch (error) {
       console.error('Error fetching following purchases:', error);
@@ -57,26 +53,22 @@ const ImageBalls = ({ balls, updateCartCount }) => {
 
   const addToCart = async (eventId) => {
     try {
-      const token = localStorage.getItem('userToken'); // Retrieve the token from local storage
-
+      const token = localStorage.getItem('userToken');
       if (!token) {
         throw new Error('Token is missing');
       }
-
       const response = await fetch('http://localhost:5555/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-access-token': token, // Set the token in the Authorization header
+          'x-access-token': token,
         },
         body: JSON.stringify({ eventId, quantity: 1 }),
       });
-
       if (!response.ok) {
         throw new Error('Failed to add to cart');
       }
-
-      updateCartCount(); // Update cart count in the NavBar
+      updateCartCount();
       const data = await response.json();
       console.log('Added to cart:', data);
     } catch (error) {
@@ -91,9 +83,7 @@ const ImageBalls = ({ balls, updateCartCount }) => {
         setHoverIndex(-1);
       }
     };
-
     document.addEventListener('mousedown', handleOutsideClick);
-
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
@@ -108,8 +98,9 @@ const ImageBalls = ({ balls, updateCartCount }) => {
       <div className="relative w-full h-96 mx-auto bg-white">
         {balls.map((ball, index) => {
           const adjustedSize = hoverIndex === index || clickedIndex === index ? ball.size * 1.2 : ball.size;
-          const fontSize = adjustedSize * 0.05; // Further reduce font size based on the bubble size
-          const buttonPadding = adjustedSize * 0.03; // Further reduce button padding based on the bubble size
+          const fontSize = adjustedSize * 0.05;
+          const buttonPadding = adjustedSize * 0.03;
+          const iconSize = fontSize * 1.2; // Slightly larger than the font size
 
           return (
             <div
@@ -150,19 +141,21 @@ const ImageBalls = ({ balls, updateCartCount }) => {
                       />
                     ))}
                   </div>
-                  <div>
+                  <div className="flex flex-col space-y-2">
                     <button
-                      className="bg-green-500 text-white m-1 rounded"
-                      style={{ padding: `${buttonPadding}px` }}
-                      onClick={() => addToCart(ball._id)}
+                      className="bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center transition-colors duration-200"
+                      style={{ padding: `${buttonPadding}px`, fontSize: `${fontSize}px` }}
+                      onClick={(e) => { e.stopPropagation(); addToCart(ball._id); }}
                     >
+                      <FaShoppingCart style={{ width: `${iconSize}px`, height: `${iconSize}px`, marginRight: '4px' }} />
                       Comprar
                     </button>
                     <button
-                      className="bg-orange-500 text-white m-1 rounded"
-                      style={{ padding: `${buttonPadding}px` }}
-                      onClick={() => navigate(`/events/${ball._id}`)}
+                      className="bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors duration-200"
+                      style={{ padding: `${buttonPadding}px`, fontSize: `${fontSize}px` }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/events/${ball._id}`); }}
                     >
+                      <FaInfoCircle style={{ width: `${iconSize}px`, height: `${iconSize}px`, marginRight: '4px' }} />
                       Mais Info
                     </button>
                   </div>

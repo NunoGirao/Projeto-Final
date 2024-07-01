@@ -1,51 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillAlt, FaUsers, FaInfoCircle } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillAlt, FaUsers, FaInfoCircle, FaTicketAlt, FaShare, FaClock } from 'react-icons/fa';
 import NavBar from './navbar';
-
-const containerStyle = {
-  width: '100%',
-  height: '400px'
-};
 
 const EventDetails = () => {
   const { id } = useParams();
   const [event, setEvent] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
         const response = await fetch(`http://localhost:5555/api/events/${id}`);
-        if (!response.ok) {
-          throw new Error('Falha ao buscar detalhes do evento');
-        }
+        if (!response.ok) throw new Error('Falha ao obter detalhes do evento');
         const data = await response.json();
         setEvent(data);
       } catch (error) {
-        console.error("Erro ao buscar detalhes do evento:", error);
+        console.error("Erro ao obter detalhes do evento:", error);
       }
     };
-
     fetchEvent();
   }, [id]);
-
-  if (!event) {
-    return <div className="flex justify-center items-center h-screen">A carregar...</div>;
-  }
-
-  const center = {
-    lat: parseFloat(event.place.latitude),
-    lng: parseFloat(event.place.longitude)
-  };
 
   const handleBuyTickets = async () => {
     const token = localStorage.getItem('userToken');
     if (!token) {
-      alert('Por favor, faça login para comprar bilhetes');
+      alert('Por favor, inicie sessão para comprar bilhetes');
       return;
     }
-
     try {
       const response = await fetch('http://localhost:5555/api/cart/add', {
         method: 'POST',
@@ -53,114 +36,115 @@ const EventDetails = () => {
           'Content-Type': 'application/json',
           'x-access-token': token,
         },
-        body: JSON.stringify({ eventId: id, quantity: 1 })
+        body: JSON.stringify({ eventId: id, quantity })
       });
-
-      if (!response.ok) {
-        throw new Error('Falha ao adicionar ao carrinho');
-      }
-
-      alert('Bilhete adicionado ao carrinho!');
-      const result = await response.json();
-      console.log(result);  // Log do backend
+      if (!response.ok) throw new Error('Falha ao adicionar ao carrinho');
+      alert('Bilhetes adicionados ao carrinho!');
     } catch (error) {
       console.error("Erro ao adicionar ao carrinho:", error);
       alert('Falha ao adicionar ao carrinho');
     }
   };
 
+  if (!event) return <div className="flex justify-center items-center h-screen">A carregar...</div>;
+
+  const center = {
+    lat: parseFloat(event.place.latitude),
+    lng: parseFloat(event.place.longitude)
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <NavBar />
-      <div className="container mx-auto p-4 mt-12">
-        <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-6">
-            <h1 className="text-4xl font-bold">{event.name}</h1>
-            <div className="flex space-x-4 mt-4">
-              <div className="flex items-center space-x-2">
-                <FaCalendarAlt className="text-3xl" />
-                <span className="text-2xl">{new Date(event.date).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FaMoneyBillAlt className="text-3xl" />
-                <span className="text-2xl">€{event.price}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FaUsers className="text-3xl" />
-                <span className="text-2xl">{event.capacity}</span>
-              </div>
-            </div>
-          </div>
-          <img src={event.image} alt={event.name} className="w-full h-80 object-cover" />
-          <div className="p-6 bg-gray-100">
-            <div className="flex items-center mb-4">
-              <FaMapMarkerAlt className="text-gray-500 mr-2" />
-              <p className="text-lg"><strong>Local:</strong> {event.place.name}</p>
-            </div>
-            <div className="flex items-center mb-4">
-              <FaInfoCircle className="text-gray-500 mr-2" />
-              <p className="text-lg"><strong>Ocupação:</strong> {event.occupation}</p>
-            </div>
-            <p className="text-lg mb-6">{event.description}</p>
-            <div className="h-64 rounded overflow-hidden shadow-inner">
-              <LoadScript googleMapsApiKey="AIzaSyBdM3ujB-MKTLuZTnJ66m_X2-rfKDthWh4">
-                <GoogleMap
-                  mapContainerStyle={containerStyle}
-                  center={center}
-                  zoom={15}
-                >
-                  <Marker position={center} />
-                </GoogleMap>
-              </LoadScript>
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-between mt-12">
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden w-1/2 mr-2 p-4">
-            <img src={event.image} alt={event.name} className="w-full h-32 object-cover mb-4 rounded-lg" />
-            <h2 className="text-2xl font-bold mb-2">Detalhes do Evento</h2>
-            <p className="text-lg mb-4">Junte-se a nós para mais um evento incrível com grandes atuações.</p>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <FaCalendarAlt className="text-xl text-gray-700" />
-                <span className="text-lg">{new Date(event.date).toLocaleDateString()}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FaMoneyBillAlt className="text-xl text-gray-700" />
-                <span className="text-lg">€{event.price}</span>
+      <div className="container mx-auto p-4 mt-16">
+        <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+          <div className="relative">
+            <img src={event.image} alt={event.name} className="w-full h-96 object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent flex items-end">
+              <div className="p-6 w-full">
+                <h1 className="text-4xl font-bold text-white mb-2">{event.name}</h1>
+                <div className="flex flex-wrap gap-4 text-white">
+                  <div className="flex items-center">
+                    <FaCalendarAlt className="mr-2" />
+                    <span>{new Date(event.date).toLocaleDateString('pt-PT')}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FaClock className="mr-2" />
+                    <span>{new Date(event.date).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FaMoneyBillAlt className="mr-2" />
+                    <span>{event.price.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' })}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FaUsers className="mr-2" />
+                    <span>{event.capacity} participantes</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden w-1/2 ml-2 p-4">
-            <h2 className="text-2xl font-bold mb-4">Bilhetes</h2>
-            <div className="flex items-center justify-center">
-              <div className="w-48 h-48">
-                <svg viewBox="0 0 36 36" className="w-full h-full">
-                  <path
-                    className="text-gray-300"
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831
-                      a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    strokeWidth="3"
-                    strokeDasharray="22, 100"
-                  />
-                  <path
-                    className="text-red-500"
-                    d="M18 2.0845
-                      a 15.9155 15.9155 0 0 1 0 31.831"
-                    fill="none"
-                    strokeWidth="3"
-                    strokeDasharray="22, 100"
-                    strokeDashoffset="75"
-                  />
-                  <text x="18" y="20.35" className="text-2xl text-red-500 font-bold" textAnchor="middle" fill="currentColor">{event.occupation}</text>
-                </svg>
+          
+          <div className="p-6">
+            <div className="flex flex-wrap -mx-4">
+              <div className="w-full lg:w-2/3 px-4 mb-8">
+                <h2 className="text-2xl font-semibold mb-4">Sobre o Evento</h2>
+                <p className="text-gray-700 mb-6">{event.description}</p>
+                
+                <div className="bg-gray-100 p-4 rounded-lg mb-6">
+                  <h3 className="text-xl font-semibold mb-2">Detalhes do Evento</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <FaMapMarkerAlt className="text-gray-500 mr-2" />
+                      <span>{event.place.name}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FaInfoCircle className="text-gray-500 mr-2" />
+                      <span>Ocupação: {event.occupation}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="h-64 rounded-lg overflow-hidden shadow-inner">
+                  <LoadScript googleMapsApiKey="AIzaSyBdM3ujB-MKTLuZTnJ66m_X2-rfKDthWh4">
+                    <GoogleMap mapContainerStyle={{ width: '100%', height: '100%' }} center={center} zoom={15}>
+                      <Marker position={center} />
+                    </GoogleMap>
+                  </LoadScript>
+                </div>
+              </div>
+              
+              <div className="w-full lg:w-1/3 px-4">
+                <div className="bg-gray-100 p-6 rounded-lg shadow-inner">
+                  <h2 className="text-2xl font-semibold mb-4">Comprar Bilhetes</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-lg">Preço:</span>
+                    <span className="text-2xl font-bold">{event.price.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' })}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-lg">Quantidade:</span>
+                    <div className="flex items-center">
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="bg-gray-300 text-gray-700 px-3 py-1 rounded-l hover:bg-gray-400 transition duration-300">-</button>
+                      <span className="bg-white px-4 py-1">{quantity}</span>
+                      <button onClick={() => setQuantity(quantity + 1)} className="bg-gray-300 text-gray-700 px-3 py-1 rounded-r hover:bg-gray-400 transition duration-300">+</button>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={handleBuyTickets}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition duration-300 flex items-center justify-center"
+                  >
+                    <FaTicketAlt className="mr-2" />
+                    Comprar Bilhetes
+                  </button>
+                  <div className="mt-6 text-center">
+                    <button className="text-blue-600 hover:text-blue-800 transition duration-300">
+                      <FaShare className="inline mr-2" />
+                      Partilhar Evento
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-            <button className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" onClick={handleBuyTickets}>
-              Comprar Bilhetes
-            </button>
           </div>
         </div>
       </div>

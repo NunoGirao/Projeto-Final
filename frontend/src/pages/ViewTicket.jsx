@@ -110,7 +110,7 @@ const ViewTicket = () => {
               </div>
               <div className="flex items-center text-gray-700">
                 <FaUsers className="mr-2 text-blue-500" />
-                <span>{ticket.eventOccupation} / {ticket.eventCapacity} attendees</span>
+                <span>{ticket.eventOccupation} / {ticket.eventCapacity} Participantes</span>
               </div>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg mb-6">

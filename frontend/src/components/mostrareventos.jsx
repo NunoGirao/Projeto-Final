@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BsChevronCompactLeft, BsChevronCompactRight } from 'react-icons/bs';
+import { FaShoppingCart, FaInfoCircle, FaUserFriends } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const MostrarEventos = ({ items, category }) => {
@@ -19,16 +20,12 @@ const MostrarEventos = ({ items, category }) => {
       } else {
         setVisibleItems(2);
       }
-
       setShowVerMais(window.innerWidth >= 769);
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleNext = () => {
@@ -51,23 +48,14 @@ const MostrarEventos = ({ items, category }) => {
   const fetchFollowingPurchases = async (eventId) => {
     try {
       const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token is missing');
-      }
-
+      if (!token) throw new Error('Token is missing');
       const response = await fetch(`http://localhost:5555/api/events/${eventId}/followings-purchases`, {
-        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'x-access-token': token,
         },
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch following purchases');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch following purchases');
       const data = await response.json();
       setFollowingPurchases((prevState) => ({ ...prevState, [eventId]: data }));
     } catch (error) {
@@ -78,11 +66,7 @@ const MostrarEventos = ({ items, category }) => {
   const addToCart = async (eventId) => {
     try {
       const token = localStorage.getItem('userToken');
-
-      if (!token) {
-        throw new Error('Token is missing');
-      }
-
+      if (!token) throw new Error('Token is missing');
       const response = await fetch('http://localhost:5555/api/cart/add', {
         method: 'POST',
         headers: {
@@ -91,13 +75,8 @@ const MostrarEventos = ({ items, category }) => {
         },
         body: JSON.stringify({ eventId, quantity: 1 }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to add to cart');
-      }
-
-      const data = await response.json();
-      console.log('Added to cart:', data);
+      if (!response.ok) throw new Error('Failed to add to cart');
+      console.log('Added to cart:', await response.json());
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
@@ -135,7 +114,6 @@ const MostrarEventos = ({ items, category }) => {
   const generateUrl = (category) => {
     const specialCases = {
       "musica & festivais": "musicafestival",
-      // Adicione outros casos especiais aqui
     };
     let url = specialCases[category.toLowerCase()] || category.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '');
     return url;
@@ -169,65 +147,62 @@ const MostrarEventos = ({ items, category }) => {
 
       <div className="flex overflow-hidden relative" style={{ width: '100%' }}>
         <div className="flex transition-transform duration-300" style={{ transform: `translateX(-${currentIndex * (100 / visibleItems)}%)`, width: '100%' }}>
-          {items.map((item, index) => {
-            const isHovered = hoverIndex === index;
-            return (
-              <div
-                key={index}
-                className="min-w-[20%] p-1"
-                style={{ flex: `0 0 ${100 / visibleItems}%`, boxSizing: 'border-box' }}
-                onMouseEnter={() => handleMouseEnter(index)}
-                onMouseLeave={handleMouseLeave}
-              >
-                <div className="shadow-lg overflow-hidden relative">
-                  <img src={item.image} alt={item.name} className="w-full h-auto object-cover" style={{ height: '200px' }} />
-                  <p className="truncate text-sm p-2 text-center">{item.name}</p>
-                  {isHovered && (
-                    <div
-                      className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center text-center text-white p-3"
-                      style={{
-                        transition: 'opacity 0.3s ease-in-out',
-                        opacity: isHovered ? 1 : 0,
-                      }}
-                    >
-                      <h2>{item.name}</h2>
-                      <div className="flex flex-wrap justify-center mb-2">
-                        {followingPurchases[item._id] && followingPurchases[item._id].map((following) => (
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="min-w-[20%] p-1"
+              style={{ flex: `0 0 ${100 / visibleItems}%`, boxSizing: 'border-box' }}
+              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave}
+            >
+              <div className="relative overflow-hidden rounded-lg shadow-lg group">
+                <img 
+                  src={item.image} 
+                  alt={item.name} 
+                  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                    <h3 className="text-lg font-semibold mb-2 truncate">{item.name}</h3>
+                    <div className="flex items-center mb-2">
+                      <FaUserFriends className="mr-2" />
+                      <div className="flex -space-x-2 overflow-hidden">
+                        {followingPurchases[item._id]?.slice(0, 3).map((following) => (
                           <img
                             key={following._id}
                             src={following.profilePhoto}
                             alt={following.name}
-                            className="w-8 h-8 rounded-full border-2 border-white m-1"
+                            className="inline-block h-6 w-6 rounded-full ring-2 ring-white"
                             title={following.name}
                           />
                         ))}
-                      </div>
-                      <div>
-                        <button
-                          className="bg-green-500 text-white m-1 rounded"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addToCart(item._id);
-                          }}
-                        >
-                          Comprar
-                        </button>
-                        <button
-                          className="bg-orange-500 text-white m-1 rounded"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/events/${item._id}`);
-                          }}
-                        >
-                          Mais Info
-                        </button>
+                        {followingPurchases[item._id]?.length > 3 && (
+                          <span className="flex items-center justify-center h-6 w-6 rounded-full ring-2 ring-white bg-gray-700 text-xs text-white">
+                            +{followingPurchases[item._id].length - 3}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )}
+                    <div className="flex space-x-2">
+                      <button
+                        className="flex-1 bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded-full text-sm flex items-center justify-center transition-colors duration-200"
+                        onClick={(e) => { e.stopPropagation(); addToCart(item._id); }}
+                      >
+                        <FaShoppingCart className="mr-1" /> Comprar
+                      </button>
+                      <button
+                        className="flex-1 bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded-full text-sm flex items-center justify-center transition-colors duration-200"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/events/${item._id}`); }}
+                      >
+                        <FaInfoCircle className="mr-1" /> Info
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            );
-          })}
+              <p className="truncate text-sm mt-2 text-center">{item.name}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

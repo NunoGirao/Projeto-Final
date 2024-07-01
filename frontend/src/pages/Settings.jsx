@@ -183,7 +183,7 @@ const SettingsPage = () => {
     <div className="bg-gray-100 min-h-screen">
       <NavBar />
       <div className="container mx-auto p-6 mt-16">
-        <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">Settings</h1>
+        <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">Defenições</h1>
         {error && (
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
             <p>{error}</p>
@@ -255,7 +255,7 @@ const SettingsPage = () => {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="pl-10 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Current Password"
+                  placeholder="Palavra-passe Atual"
                   required
                 />
               </div>
@@ -268,7 +268,7 @@ const SettingsPage = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="pl-10 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="New Password"
+                  placeholder="Nova Palavra-passe"
                   required
                 />
               </div>
@@ -281,7 +281,7 @@ const SettingsPage = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="pl-10 w-full px-4 py-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Confirm New Password"
+                  placeholder="Confirmar Nova Palavra-passe"
                   required
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
