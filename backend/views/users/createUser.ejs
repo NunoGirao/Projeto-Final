@@ -1,133 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Create User</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Utilizador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f4f4;
-  }
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h1 class="text-2xl font-bold mb-6 text-center">Criar Utilizador</h1>
+        <form id="createUserForm">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="userName">
+                    Nome
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="userName" type="text" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="userEmail">
+                    Email
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="userEmail" type="email" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="userPassword">
+                    Password
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="userPassword" type="password" required>
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="userRole">
+                    Função
+                </label>
+                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="userRole" required>
+                    <option value="User">Utilizador</option>
+                    <option value="Admin">Administrador</option>
+                </select>
+            </div>
+            <div class="flex items-center justify-between">
+                <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                    Criar Utilizador
+                </button>
+            </div>
+        </form>
+        <div class="flex justify-between mt-6">
+            <button id="goBack" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Voltar a Utilizadores
+            </button>
+            <button id="goToDashboard" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Voltar ao Painel
+            </button>
+        </div>
+    </div>
 
-  h1 {
-    color: #333;
-    margin-bottom: 20px;
-    text-align: center;
-  }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-  form {
-    max-width: 400px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+            document.getElementById('createUserForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const name = document.getElementById('userName').value;
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
+    const role = document.getElementById('userRole').value;
 
-  label {
-    display: block;
-    margin-bottom: 5px;
-    color: #555;
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
-
-  button[type="submit"],
-  button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s ease;
-  }
-
-  button:hover {
-    background-color: #0056b3;
-  }
-
-  #goBack,
-  #goToDashboard {
-    display: block;
-    margin: 20px auto; /* Center the buttons horizontally */
-    text-align: center;
-  }
-</style>
-<body>
-  <h1>Criar Utilizador</h1>
-  <form id="createUserForm">
-    <label for="userName">Nome:</label>
-    <input type="text" id="userName" required>
-    <label for="userEmail">Email:</label>
-    <input type="email" id="userEmail" required>
-    <label for="userPassword">Password:</label>
-    <input type="password" id="userPassword" required>
-    <label for="userRole">Função:</label>
-    <select id="userRole" required>
-      <option value="User">Utilizador</option>
-      <option value="Admin">Administrador</option>
-    </select>
-    <button type="submit">Criar Utilizador</button>
-  </form>
-
-  <button id="goBack">Voltar a Utilizadores</button>
-  <button id="goToDashboard">Voltar ao Painel</button>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
-
-      document.getElementById('createUserForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const name = document.getElementById('userName').value;
-        const email = document.getElementById('userEmail').value;
-        const password = document.getElementById('userPassword').value;
-        const role = document.getElementById('userRole').value;
-
+    try {
+        console.log('Sending request with data:', { name, email, password, role });
         const response = await fetch('/api/users', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-access-token': token
-          },
-          body: JSON.stringify({ name, email, password, role })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-access-token': localStorage.getItem('adminToken')
+            },
+            body: JSON.stringify({ name, email, password, role })
         });
 
+        console.log('Response status:', response.status);
         const data = await response.json();
-        if (data._id) {
-          alert('User created successfully!');
-          window.location.href = '/admin/users';
-        } else {
-          alert('Failed to create user.');
+        console.log('Response data:', data);
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Failed to create user');
         }
-      });
 
-      document.getElementById('goBack').addEventListener('click', function() {
-        window.location.href = '/admin/users';
-      });
+        if (data._id) {
+            alert('Utilizador criado com sucesso!');
+            window.location.href = '/admin/users';
+        } else {
+            throw new Error('Failed to create user');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Falha ao criar utilizador: ' + error.message);
+    }
+});
 
-      document.getElementById('goToDashboard').addEventListener('click', function() {
-        window.location.href = '/admin/dashboard';
-      });
-    });
-  </script>
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = '/admin/users';
+            });
+
+            document.getElementById('goToDashboard').addEventListener('click', function() {
+                window.location.href = '/admin/dashboard';
+            });
+        });
+    </script>
 </body>
 </html>

@@ -8,6 +8,19 @@ const Home = () => {
   const [topEvents, setTopEvents] = useState([]);
   const [events, setEvents] = useState([]);
   const [cartCount, setCartCount] = useState(0);
+  const [positions, setPositions] = useState([
+    { size: 250, x: 50, y: 50 }, // Bola central
+    { size: 150, x: 70, y: 30 },
+    { size: 150, x: 32, y: 70 },
+    { size: 150, x: 10, y: 50 },
+    { size: 150, x: 25, y: 30 },
+    { size: 150, x: 80, y: 80 },
+    { size: 150, x: 90, y: 50 },
+    { size: 100, x: 65, y: 75 },
+    { size: 100, x: 20, y: 80 },
+    { size: 100, x: 82, y: 20 },
+    { size: 100, x: 38, y: 20 },
+  ]);
 
   useEffect(() => {
     const fetchTopEvents = async () => {
@@ -22,7 +35,7 @@ const Home = () => {
         console.error("Error fetching top events:", error);
       }
     };
-  
+
     const fetchEvents = async () => {
       try {
         const response = await fetch('http://localhost:5555/api/events');
@@ -35,12 +48,11 @@ const Home = () => {
         console.error("Error fetching events:", error);
       }
     };
-  
+
     fetchTopEvents();
     fetchEvents();
     updateCartCount();
   }, []);
-  
 
   const updateCartCount = async () => {
     const token = localStorage.getItem('userToken');
@@ -67,19 +79,53 @@ const Home = () => {
     "https://images.gamebanana.com/img/ss/mods/52107ac3349f6.jpg",
   ];
 
-  const positions = [
-    { size: 250, x: 50, y: 50 }, // Bola central
-    { size: 150, x: 70, y: 30 },
-    { size: 150, x: 35, y: 70 },
-    { size: 150, x: 10, y: 50 },
-    { size: 150, x: 25, y: 30 },
-    { size: 150, x: 80, y: 80 },
-    { size: 150, x: 90, y: 50 },
-    { size: 100, x: 65, y: 75 },
-    { size: 100, x: 20, y: 80 },
-    { size: 100, x: 80, y: 20 },
-    { size: 100, x: 38, y: 20 },
-  ];
+  const adjustBalls = () => {
+    if (window.innerWidth >= 1024) {
+      setPositions([
+        { size: 250, x: 50, y: 50 }, // Bola central
+        { size: 150, x: 70, y: 30 },
+        { size: 150, x: 32, y: 70 },
+        { size: 150, x: 10, y: 50 },
+        { size: 150, x: 25, y: 30 },
+        { size: 150, x: 80, y: 80 },
+        { size: 150, x: 90, y: 50 },
+        { size: 100, x: 65, y: 75 },
+        { size: 100, x: 20, y: 80 },
+        { size: 100, x: 82, y: 20 },
+        { size: 100, x: 38, y: 20 },
+      ]);
+    } else if (window.innerWidth >= 768) {
+      setPositions([
+        { size: 200, x: 50, y: 50 }, // Bola central
+        { size: 120, x: 70, y: 30 },
+        { size: 120, x: 32, y: 70 },
+        { size: 120, x: 10, y: 50 },
+        { size: 120, x: 25, y: 30 },
+        { size: 120, x: 80, y: 80 },
+        { size: 120, x: 90, y: 50 },
+        { size: 80, x: 65, y: 75 },
+        { size: 80, x: 20, y: 80 },
+      ]);
+    } else {
+      setPositions([
+        { size: 150, x: 50, y: 50 }, // Bola central
+        { size: 100, x: 70, y: 30 },
+        { size: 100, x: 32, y: 70 },
+        { size: 100, x: 10, y: 50 },
+        { size: 100, x: 25, y: 30 },
+        { size: 100, x: 80, y: 80 },
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    adjustBalls();
+    window.addEventListener('resize', adjustBalls);
+
+    return () => {
+      window.removeEventListener('resize', adjustBalls);
+    };
+  }, []);
 
   const balls = topEvents.slice(0, positions.length).map((event, index) => ({
     ...event,

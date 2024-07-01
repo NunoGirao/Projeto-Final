@@ -1,147 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Edit User</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Utilizador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f4f4;
-  }
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-md">
+        <div>
+            <h1 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Editar Utilizador</h1>
+        </div>
+        <form id="editUserForm" class="mt-8 space-y-6">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="userName" class="sr-only">Nome</label>
+                    <input id="userName" name="userName" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Nome">
+                </div>
+                <div>
+                    <label for="userEmail" class="sr-only">Email</label>
+                    <input id="userEmail" name="userEmail" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Email">
+                </div>
+                <div>
+                    <label for="userRole" class="sr-only">Função</label>
+                    <select id="userRole" name="userRole" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm">
+                        <option value="User">Utilizador</option>
+                        <option value="Admin">Administrador</option>
+                    </select>
+                </div>
+            </div>
 
-  h1 {
-    color: #333;
-    margin-bottom: 20px;
-    text-align: center;
-  }
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-save"></i>
+                    </span>
+                    Guardar Alterações
+                </button>
+            </div>
+        </form>
+        <div class="flex justify-between">
+            <button id="goBack" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left mr-2"></i>Voltar a Utilizadores
+            </button>
+            <button id="goToDashboard" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-tachometer-alt mr-2"></i>Voltar ao Painel
+            </button>
+        </div>
+    </div>
 
-  form {
-    max-width: 400px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-  label {
-    display: block;
-    margin-bottom: 5px;
-    color: #555;
-  }
+            const userId = window.location.pathname.split('/').pop();
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'x-access-token': token
+                    }
+                });
 
-  input[type="text"],
-  input[type="email"],
-  select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user details');
+                }
 
-  button[type="submit"],
-  button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.3s ease;
-  }
+                const user = await response.json();
+                document.getElementById('userName').value = user.name;
+                document.getElementById('userEmail').value = user.email;
+                document.getElementById('userRole').value = user.role;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load user details. Please try again.');
+            }
 
-  button:hover {
-    background-color: #0056b3;
-  }
+            document.getElementById('editUserForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const name = document.getElementById('userName').value;
+                const email = document.getElementById('userEmail').value;
+                const role = document.getElementById('userRole').value;
 
-  #goBack,
-  #goToDashboard {
-    display: block;
-    margin: 20px auto; /* Center the buttons horizontally */
-    text-align: center;
-  }
-</style>
-<body>
-  <h1>Editar Utilizador</h1>
-  <form id="editUserForm">
-    <label for="userName">Nome:</label>
-    <input type="text" id="userName" required>
-    <label for="userEmail">Email:</label>
-    <input type="email" id="userEmail" required>
-    <label for="userRole">Função:</label>
-    <select id="userRole" required>
-      <option value="User">Utilizador</option>
-      <option value="Admin">Administrador</option>
-    </select>
-    <button type="submit">Guardar Alterações</button>
-  </form>
+                try {
+                    const response = await fetch(`/api/users/${userId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-access-token': token
+                        },
+                        body: JSON.stringify({ name, email, role })
+                    });
 
-  <button id="goBack">Voltar a Utilizadores</button>
-  <button id="goToDashboard">Voltar ao Painel</button>
+                    if (!response.ok) {
+                        throw new Error('Failed to update user');
+                    }
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
+                    const data = await response.json();
+                    if (data._id) {
+                        alert('Utilizador atualizado com sucesso!');
+                        window.location.href = '/admin/users';
+                    } else {
+                        throw new Error('Failed to update user');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Falha ao atualizar utilizador. Por favor, tente novamente.');
+                }
+            });
 
-      const userId = window.location.pathname.split('/').pop();
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'GET',
-        headers: {
-          'x-access-token': token
-        }
-      });
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = '/admin/users';
+            });
 
-      if (!response.ok) {
-        alert('Failed to fetch user details');
-        return;
-      }
-
-      const user = await response.json();
-      document.getElementById('userName').value = user.name;
-      document.getElementById('userEmail').value = user.email;
-      document.getElementById('userRole').value = user.role;
-
-      document.getElementById('editUserForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const name = document.getElementById('userName').value;
-        const email = document.getElementById('userEmail').value;
-        const role = document.getElementById('userRole').value;
-
-        const response = await fetch(`/api/users/${userId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-access-token': token
-          },
-          body: JSON.stringify({ name, email, role })
+            document.getElementById('goToDashboard').addEventListener('click', function() {
+                window.location.href = '/admin/dashboard';
+            });
         });
-
-        const data = await response.json();
-        if (data._id) {
-          alert('User updated successfully!');
-          window.location.href = '/admin/users';
-        } else {
-          alert('Failed to update user.');
-        }
-      });
-
-      document.getElementById('goBack').addEventListener('click', function() {
-        window.location.href = '/admin/users';
-      });
-
-      document.getElementById('goToDashboard').addEventListener('click', function() {
-        window.location.href = '/admin/dashboard';
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>

@@ -16,6 +16,7 @@ import ProfilePage from './pages/ProfilePage';
 import FollowingPage from './components/FollowingPage';
 import FollowersPage from './components/FollowersPage';
 import PaymentForm from './components/PaymentForm';
+import SettingsPage from './pages/Settings';
 
 
 const App = () => {
@@ -23,7 +24,7 @@ const App = () => {
     <Routes>
       <Route path='/' element={<Home />} />
       <Route path='/teatroarte' element={<TeatroArte />} />
-      <Route path='/musicafestival' element={<MusicaFestival />} />
+      <Route path='/musicafestivais' element={<MusicaFestival />} />
       <Route path='/familia' element={<Familia />} />
       <Route path='/desportoaventura' element={<DesportoAventura />} />
       <Route path="/login" element={<Login />} />
@@ -38,7 +39,7 @@ const App = () => {
       <Route path="/perfil/:name/following" element={<FollowingPage />} />
       <Route path="/perfil/:name/followers" element={<FollowersPage />} />
       <Route path="/payment" element={<PaymentForm amount={5000} />} /> {/* Example payment route */}
-
+      <Route path="/settings" element={<SettingsPage />} /> {/* Add the settings route */}
     </Routes>
   );
 }

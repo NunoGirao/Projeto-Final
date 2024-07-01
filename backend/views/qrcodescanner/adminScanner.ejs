@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Code Scanner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    #preview {
+      width: 100%;
+      height: auto;
+      margin: 20px 0;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      display: none;
+    }
+
+    #nft-image {
+      margin-top: 20px;
+      max-width: 100%;
+      border-radius: 5px;
+    }
+
+    .button {
+      background-color: #007BFF;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>QR Code Scanner</h1>
+    <video id="preview"></video>
+    <div id="result">
+      <h2>Result</h2>
+      <p id="result-data"></p>
+      <img id="nft-image" src="" alt="NFT Image" />
+    </div>
+    <button id="backButton" class="button">Back to Dashboard</button>
+  </div>
+
+  <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        window.location.href = '/admin';
+        return;
+      }
+
+      const backButton = document.getElementById('backButton');
+      backButton.addEventListener('click', function() {
+        window.location.href = '/admin';
+      });
+
+      let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+      scanner.addListener('scan', function (content) {
+        const resultData = document.getElementById('result-data');
+        const resultContainer = document.getElementById('result');
+        const nftImage = document.getElementById('nft-image');
+        resultData.innerText = content;
+        resultContainer.style.display = 'block';
+
+        fetch('http://localhost:5555/api/tickets/redeem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-access-token': token
+          },
+          body: JSON.stringify({ qrData: content })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to redeem ticket');
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.message) {
+            alert(data.message);
+          }
+          if (data.nftImage) {
+            nftImage.src = data.nftImage;
+            nftImage.style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error redeeming ticket:', error);
+        });
+      });
+
+      Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[0]);
+        } else {
+          console.error('No cameras found.');
+        }
+      }).catch(function (e) {
+        console.error(e);
+      });
+    });
+  </script>
+</body>
+</html>

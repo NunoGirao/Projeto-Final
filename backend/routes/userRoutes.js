@@ -14,11 +14,12 @@ router.get('/search', verifyUserToken, userController.searchUsers);
 router.get('/', verifyAdminToken, userController.getAllUsers);
 router.get('/name/:name', verifyUserToken, userController.getUserByName);
 router.get('/profile/nft-images', verifyUserToken, userController.getNftImages);
+router.get('/settings', verifyUserToken, userController.getUserSettings);
+router.put('/settings', verifyUserToken, userController.updateUserSettings);
 
 router.get('/:id', verifyAdminToken, userController.getUserById);
 router.put('/:id', verifyAdminToken, userController.updateUser);
 router.post('/', verifyAdminToken, userController.createUser);
 router.delete('/:id', verifyAdminToken, userController.deleteUser);
-
 
 module.exports = router;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BsChevronCompactLeft, BsChevronCompactRight } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,8 +6,30 @@ const MostrarEventos = ({ items, category }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hoverIndex, setHoverIndex] = useState(-1);
   const [followingPurchases, setFollowingPurchases] = useState({});
-  const visibleItems = 5;
+  const [visibleItems, setVisibleItems] = useState(5);
+  const [showVerMais, setShowVerMais] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setVisibleItems(5);
+      } else if (window.innerWidth >= 768) {
+        setVisibleItems(3);
+      } else {
+        setVisibleItems(2);
+      }
+
+      setShowVerMais(window.innerWidth >= 769);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev < items.length - visibleItems ? prev + 1 : prev));
@@ -110,12 +132,27 @@ const MostrarEventos = ({ items, category }) => {
 
   const barColor = getBarColor(category);
 
+  const generateUrl = (category) => {
+    const specialCases = {
+      "musica & festivais": "musicafestival",
+      // Adicione outros casos especiais aqui
+    };
+    let url = specialCases[category.toLowerCase()] || category.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/gi, '');
+    return url;
+  };
+
   return (
     <div className="relative overflow-hidden mt-10 w-4/5 mx-auto">
       <div className="text-2xl text-white font-bold mb-3 flex items-center justify-between">
-        <button className={`${barColor} flex justify-between`} style={{ width: '100%' }} onClick={() => navigate(`/${category.toLowerCase().replace(/ /g, '')}`)}>
-          <div className='ml-2'>{category}</div>
-          <div className='mr-2 hover:underline'>Ver Mais</div>
+        <button
+          className={`${barColor} flex items-center justify-between w-full`}
+          onClick={() => navigate(`/${generateUrl(category)}`)}
+          style={{ overflow: 'hidden' }}
+        >
+          <div className='ml-2 truncate' style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip' }}>
+            {category}
+          </div>
+          {showVerMais && <div className='mr-2 hover:underline whitespace-nowrap'>Ver Mais</div>}
         </button>
         <div className="flex items-center">
           <button onClick={handlePrev} className={`${barColor} text-white mr-4 ml-2`} style={{ height: '32px' }}>

@@ -206,24 +206,19 @@ eventController.getFollowersPurchases = async (req, res) => {
     const userId = req.user._id;
     const eventId = req.params.id;
 
-    // Fetch the user's following list
     const user = await User.findById(userId).populate('following');
     const followingIds = user.following.map(following => following._id);
-    console.log('Following IDs:', followingIds);
 
-    // Find the event and populate the tickets with user data
     const event = await Event.findById(eventId).populate('tickets.user');
-    console.log('Event:', event);
-
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    // Filter tickets for the event purchased by users the current user is following
-    const followingTickets = event.tickets.filter(ticket => followingIds.some(id => id.equals(ticket.user._id)));
-    console.log('Following Tickets:', followingTickets);
+    const followingTickets = event.tickets.filter(ticket => 
+      followingIds.some(id => id.equals(ticket.user._id)) &&
+      ticket.user.showPurchasedEvents // Check the user's showPurchasedEvents setting
+    );
 
-    // Use a Set to store unique user IDs and filter out duplicates
     const uniqueUsers = new Map();
     followingTickets.forEach(ticket => {
       if (!uniqueUsers.has(ticket.user._id.toString())) {
@@ -241,6 +236,5 @@ eventController.getFollowersPurchases = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving following purchases' });
   }
 };
-
 
 module.exports = eventController;

@@ -1,242 +1,174 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <title>Editar Evento</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    form {
-      margin-top: 20px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 5px;
-      color: #555;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    input[type="number"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-
-    button[type="submit"],
-    button {
-      background-color: #246b9b;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button[type="submit"]:hover,
-    button:hover {
-      background-color: #0b5885;
-    }
-
-    .button-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 15px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Evento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
-<body>
-  <h1>Editar Evento</h1>
-  <form id="editEventForm">
-    <label for="eventName">Nome:</label>
-    <input type="text" id="eventName" required>
-    
-    <label for="eventDate">Data:</label>
-    <input type="date" id="eventDate" required>
-    
-    <label for="eventPrice">Preço:</label>
-    <input type="number" id="eventPrice" required>
-    
-    <label for="eventOccupation">Ocupação:</label>
-    <input type="number" id="eventOccupation" readonly>
-    
-    <label for="eventCapacity">Capacidade:</label>
-    <input type="number" id="eventCapacity" required>
-    
-    <label for="eventPlace">Lugar:</label>
-    <select id="eventPlace" required></select>
-    
-    <label for="eventCategory">Categoria:</label>
-    <select id="eventCategory" required>
-      <option value="Teatro & Arte">Teatro & Arte</option>
-      <option value="Música & Festivais">Música & Festivais</option>
-      <option value="Família">Família</option>
-      <option value="Desporto & Aventura">Desporto & Aventura</option>
-    </select>
-    
-    <label for="eventSubcategory">Subcategoria:</label>
-    <select id="eventSubcategory" required></select>
-    
-    <label for="eventDescription">Descrição:</label>
-    <textarea id="eventDescription" required></textarea>
-    
-    <label for="eventImage">Imagem:</label>
-    <input type="file" id="eventImage" accept="image/*">
-    
-    <label for="eventNftImage">Imagem NFT:</label>
-    <input type="file" id="eventNftImage" accept="image/*">
-    
-    <div class="button-container">
-      <button type="submit">Guardar Alterações</button>
-      <button id="goBack" type="button">Voltar a Eventos</button>
+<body class="bg-gray-100 min-h-screen p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Editar Evento</h1>
+        <form id="editEventForm" class="space-y-6" enctype="multipart/form-data">
+            <div>
+                <label for="eventName" class="block text-sm font-medium text-gray-700">Nome:</label>
+                <input type="text" id="eventName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="eventDate" class="block text-sm font-medium text-gray-700">Data:</label>
+                <input type="date" id="eventDate" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="eventPrice" class="block text-sm font-medium text-gray-700">Preço:</label>
+                <input type="number" id="eventPrice" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="eventOccupation" class="block text-sm font-medium text-gray-700">Ocupação:</label>
+                <input type="number" id="eventOccupation" readonly class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm">
+            </div>
+            <div>
+                <label for="eventCapacity" class="block text-sm font-medium text-gray-700">Capacidade:</label>
+                <input type="number" id="eventCapacity" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            </div>
+            <div>
+                <label for="eventPlace" class="block text-sm font-medium text-gray-700">Lugar:</label>
+                <select id="eventPlace" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></select>
+            </div>
+            <div>
+                <label for="eventCategory" class="block text-sm font-medium text-gray-700">Categoria:</label>
+                <select id="eventCategory" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                    <option value="Teatro & Arte">Teatro & Arte</option>
+                    <option value="Música & Festivais">Música & Festivais</option>
+                    <option value="Família">Família</option>
+                    <option value="Desporto & Aventura">Desporto & Aventura</option>
+                </select>
+            </div>
+            <div>
+                <label for="eventSubcategory" class="block text-sm font-medium text-gray-700">Subcategoria:</label>
+                <select id="eventSubcategory" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></select>
+            </div>
+            <div>
+                <label for="eventDescription" class="block text-sm font-medium text-gray-700">Descrição:</label>
+                <textarea id="eventDescription" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" rows="4"></textarea>
+            </div>
+            <div>
+                <label for="eventImage" class="block text-sm font-medium text-gray-700">Imagem:</label>
+                <input type="file" id="eventImage" name="image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+              </div>
+              <div>
+                <label for="eventNftImage" class="block text-sm font-medium text-gray-700">Imagem NFT:</label>
+                <input type="file" id="eventNftImage" name="nftImage" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+              </div>
+              <div class="flex justify-between">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Guardar Alterações
+                </button>
+                <button id="goBack" type="button" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  Voltar a Eventos
+                </button>
+              </div>
+        </form>
     </div>
-  </form>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-      const eventId = window.location.pathname.split('/').pop();
+            const eventId = window.location.pathname.split('/').pop();
 
-      // Fetch existing places
-      const placesResponse = await fetch('/api/places', {
-        method: 'GET',
-        headers: {
-          'x-access-token': token
-        }
-      });
+            // Fetch existing places
+            const placesResponse = await fetch('/api/places', {
+                method: 'GET',
+                headers: { 'x-access-token': token }
+            });
 
-      const places = await placesResponse.json();
-      const eventPlaceDropdown = document.getElementById('eventPlace');
-      places.forEach(place => {
-        const option = document.createElement('option');
-        option.value = place._id;
-        option.textContent = place.name;
-        eventPlaceDropdown.appendChild(option);
-      });
+            const places = await placesResponse.json();
+            const eventPlaceDropdown = document.getElementById('eventPlace');
+            places.forEach(place => {
+                const option = document.createElement('option');
+                option.value = place._id;
+                option.textContent = place.name;
+                eventPlaceDropdown.appendChild(option);
+            });
 
-      const subcategories = {
-        'Teatro & Arte': ['Teatro', 'Museus & Exposições', 'Dança'],
-        'Música & Festivais': ['Concertos', 'Festivais'],
-        'Família': ['Parques Temáticos', 'Zoológicos', 'Aquários'],
-        'Desporto & Aventura': ['Esportes', 'Aventuras']
-      };
+            const subcategories = {
+                'Teatro & Arte': ['Teatro', 'Museus & Exposições', 'Dança'],
+                'Música & Festivais': ['Concertos', 'Festivais'],
+                'Família': ['Parques Temáticos', 'Zoológicos', 'Aquários'],
+                'Desporto & Aventura': ['Esportes', 'Aventuras']
+            };
 
-      const eventCategoryDropdown = document.getElementById('eventCategory');
-      const eventSubcategoryDropdown = document.getElementById('eventSubcategory');
+            const eventCategoryDropdown = document.getElementById('eventCategory');
+            const eventSubcategoryDropdown = document.getElementById('eventSubcategory');
 
-      eventCategoryDropdown.addEventListener('change', function() {
-        const selectedCategory = eventCategoryDropdown.value;
-        const options = subcategories[selectedCategory] || [];
-        eventSubcategoryDropdown.innerHTML = '';
-        options.forEach(subcategory => {
-          const option = document.createElement('option');
-          option.value = subcategory;
-          option.textContent = subcategory;
-          eventSubcategoryDropdown.appendChild(option);
+            eventCategoryDropdown.addEventListener('change', updateSubcategories);
+
+            function updateSubcategories() {
+                const selectedCategory = eventCategoryDropdown.value;
+                const options = subcategories[selectedCategory] || [];
+                eventSubcategoryDropdown.innerHTML = '';
+                options.forEach(subcategory => {
+                    const option = document.createElement('option');
+                    option.value = subcategory;
+                    option.textContent = subcategory;
+                    eventSubcategoryDropdown.appendChild(option);
+                });
+            }
+
+            // Fetch event details
+            const eventResponse = await fetch(`/api/events/${eventId}`, {
+                method: 'GET',
+                headers: { 'x-access-token': token }
+            });
+
+            const event = await eventResponse.json();
+            document.getElementById('eventName').value = event.name;
+            document.getElementById('eventDate').value = event.date.split('T')[0];
+            document.getElementById('eventPrice').value = event.price;
+            document.getElementById('eventOccupation').value = event.occupation;
+            document.getElementById('eventCapacity').value = event.capacity;
+            document.getElementById('eventPlace').value = event.place._id;
+            document.getElementById('eventCategory').value = event.category;
+            document.getElementById('eventDescription').value = event.description;
+
+            updateSubcategories();
+            eventSubcategoryDropdown.value = event.subcategory;
+
+            document.getElementById('editEventForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                try {
+                    const response = await fetch(`/api/events/${eventId}`, {
+                        method: 'PUT',
+                        headers: { 'x-access-token': token },
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error('Failed to update event');
+
+                    const data = await response.json();
+                    if (data._id) {
+                        alert('Evento atualizado com sucesso!');
+                        window.location.href = '/admin/events';
+                    } else {
+                        throw new Error('Failed to update event');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Falha ao atualizar o evento. Por favor, tente novamente.');
+                }
+            });
+
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = '/admin/events';
+            });
         });
-      });
-
-      // Fetch event details
-      const eventResponse = await fetch(`/api/events/${eventId}`, {
-        method: 'GET',
-        headers: {
-          'x-access-token': token
-        }
-      });
-
-      const event = await eventResponse.json();
-      document.getElementById('eventName').value = event.name;
-      document.getElementById('eventDate').value = event.date.split('T')[0];
-      document.getElementById('eventPrice').value = event.price;
-      document.getElementById('eventOccupation').value = event.occupation;
-      document.getElementById('eventCapacity').value = event.capacity;
-      document.getElementById('eventPlace').value = event.place._id;
-      document.getElementById('eventCategory').value = event.category;
-      document.getElementById('eventDescription').value = event.description;
-
-      // Set subcategories based on the selected category
-      const categoryOptions = subcategories[event.category] || [];
-      eventSubcategoryDropdown.innerHTML = '';
-      categoryOptions.forEach(subcategory => {
-        const option = document.createElement('option');
-        option.value = subcategory;
-        option.textContent = subcategory;
-        eventSubcategoryDropdown.appendChild(option);
-      });
-      eventSubcategoryDropdown.value = event.subcategory;
-
-      document.getElementById('editEventForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const name = document.getElementById('eventName').value;
-        const date = document.getElementById('eventDate').value;
-        const price = document.getElementById('eventPrice').value;
-        const occupation = document.getElementById('eventOccupation').value;
-        const capacity = document.getElementById('eventCapacity').value;
-        const place = document.getElementById('eventPlace').value;
-        const category = document.getElementById('eventCategory').value;
-        const subcategory = document.getElementById('eventSubcategory').value;
-        const description = document.getElementById('eventDescription').value;
-        const imageFile = document.getElementById('eventImage').files[0];
-        const nftImageFile = document.getElementById('eventNftImage').files[0];
-
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('date', date);
-        formData.append('price', price);
-        formData.append('occupation', occupation);
-        formData.append('capacity', capacity);
-        formData.append('place', place);
-        formData.append('category', category);
-        formData.append('subcategory', subcategory);
-        formData.append('description', description);
-        if (imageFile) {
-          formData.append('image', imageFile);
-        }
-        if (nftImageFile) {
-          formData.append('nftImage', nftImageFile);
-        }
-
-        const response = await fetch(`/api/events/${eventId}`, {
-          method: 'PUT',
-          headers: {
-            'x-access-token': token
-          },
-          body: formData
-        });
-
-        const data = await response.json();
-        if (data._id) {
-          alert('Evento atualizado com sucesso!');
-          window.location.href = '/admin/events';
-        } else {
-          alert('Falha ao atualizar o evento.');
-        }
-      });
-
-      document.getElementById('goBack').addEventListener('click', function() {
-        window.location.href = '/admin/events';
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>

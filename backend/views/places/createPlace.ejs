@@ -1,122 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Criar Lugar</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 600px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    label {
-      color: #666;
-      margin-top: 10px;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button {
-      background-color: #007BFF;
-      color: #ffffff;
-      border: none;
-      padding: 10px 20px;
-      margin: 20px 0;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Criar lugar</h1>
-    <form id="createPlaceForm">
-      <label for="placeName">Nome:</label>
-      <input type="text" id="placeName" required>
-      <label for="placeAddress">Morada:</label>
-      <input type="text" id="placeAddress" required>
-      <label for="placeCategory">Categoria:</label>
-      <input type="text" id="placeCategory" required>
-      <label for="placeLatitude">Latitude:</label>
-      <input type="text" id="placeLatitude" required>
-      <label for="placeLongitude">Longitude:</label>
-      <input type="text" id="placeLongitude" required>
-      <button type="submit">Criar lugar</button>
-    </form>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
-
-      document.getElementById('createPlaceForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const name = document.getElementById('placeName').value;
-        const address = document.getElementById('placeAddress').value;
-        const category = document.getElementById('placeCategory').value;
-        const latitude = document.getElementById('placeLatitude').value;
-        const longitude = document.getElementById('placeLongitude').value;
-
-        const response = await fetch('/api/places', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-access-token': token
-          },
-          body: JSON.stringify({ name, address, category, latitude, longitude })
-        });
-
-        const data = await response.json();
-        if (data._id) {
-          alert('Place created successfully!');
-          document.getElementById('createPlaceForm').reset();
-          window.location.href = '/admin/places';
-        } else {
-          alert('Failed to create place.');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Lugar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-      });
-    });
-  </script>
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-md fade-in">
+        <div>
+            <h1 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Criar Lugar</h1>
+        </div>
+        <form id="createPlaceForm" class="mt-8 space-y-6">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="placeName" class="sr-only">Nome</label>
+                    <input id="placeName" name="placeName" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Nome">
+                </div>
+                <div>
+                    <label for="placeAddress" class="sr-only">Morada</label>
+                    <input id="placeAddress" name="placeAddress" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Morada">
+                </div>
+                <div>
+                    <label for="placeCategory" class="sr-only">Categoria</label>
+                    <input id="placeCategory" name="placeCategory" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Categoria">
+                </div>
+                <div>
+                    <label for="placeLatitude" class="sr-only">Latitude</label>
+                    <input id="placeLatitude" name="placeLatitude" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Latitude">
+                </div>
+                <div>
+                    <label for="placeLongitude" class="sr-only">Longitude</label>
+                    <input id="placeLongitude" name="placeLongitude" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Longitude">
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-plus-circle"></i>
+                    </span>
+                    Criar Lugar
+                </button>
+            </div>
+        </form>
+        <div class="text-center">
+            <a href="/admin/places" class="font-medium text-indigo-600 hover:text-indigo-500">Voltar para a lista de lugares</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
+
+            document.getElementById('createPlaceForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const name = document.getElementById('placeName').value;
+                const address = document.getElementById('placeAddress').value;
+                const category = document.getElementById('placeCategory').value;
+                const latitude = document.getElementById('placeLatitude').value;
+                const longitude = document.getElementById('placeLongitude').value;
+
+                try {
+                    const response = await fetch('/api/places', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-access-token': token
+                        },
+                        body: JSON.stringify({ name, address, category, latitude, longitude })
+                    });
+
+                    const data = await response.json();
+                    if (data._id) {
+                        alert('Lugar criado com sucesso!');
+                        document.getElementById('createPlaceForm').reset();
+                        window.location.href = '/admin/places';
+                    } else {
+                        throw new Error('Falha ao criar o lugar.');
+                    }
+                } catch (error) {
+                    alert(error.message);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

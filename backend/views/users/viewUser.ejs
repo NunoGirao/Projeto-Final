@@ -1,208 +1,166 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>View User</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-
-    h1 {
-      color: #333;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .user-container {
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .user-details {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    p {
-      margin: 5px 0;
-    }
-
-    strong {
-      font-weight: bold;
-    }
-
-    ul {
-      list-style-type: none;
-      padding: 0;
-      margin-top: 5px;
-    }
-
-    button {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-right: 10px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    #goBack,
-    #goToDashboard {
-      display: block;
-      margin: 20px auto;
-      text-align: center;
-    }
-
-    #followButton,
-    #unfollowButton {
-      display: block;
-      margin-top: 10px;
-    }
-
-    .profile-photo {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin View User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
-<body>
-  <h1>Ver Utilizador</h1>
-  <div class="user-container">
-    <img id="profilePhoto" class="profile-photo" src="https://via.placeholder.com/150" alt="Profile Photo">
-    <div class="user-details">
-      <p><strong>Nome:</strong> <span id="userName"></span></p>
-      <p><strong>Email:</strong> <span id="userEmail"></span></p>
-      <p><strong>Função:</strong> <span id="userRole"></span></p>
-      <p><strong>Seguidores:</strong> <span id="userFollowersCount"></span></p>
-      <p><strong>A seguir:</strong> <span id="userFollowingCount"></span></p>
-      <ul id="userFollowersList"></ul>
-      <ul id="userFollowingList"></ul>
-    </div>
-  </div>
-  <button id="followButton">Seguir</button>
-  <button id="unfollowButton">Deixar de Seguir</button>
-  <button id="goBack">Voltar a Utilizadores</button>
-  <button id="goToDashboard">Voltar ao Painel</button>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">User Details</h1>
+        
+        <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <div class="flex items-center mb-4">
+                <img id="profilePhoto" class="w-20 h-20 rounded-full object-cover mr-4" src="https://via.placeholder.com/150" alt="Profile Photo">
+                <div>
+                    <h2 class="text-2xl font-semibold" id="userName"></h2>
+                    <p class="text-gray-600" id="userEmail"></p>
+                    <p class="text-sm text-gray-500" id="userRole"></p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div class="bg-gray-50 p-3 rounded">
+                    <p class="text-sm text-gray-600">User ID</p>
+                    <p class="font-semibold" id="userId"></p>
+                </div>
+                <div class="bg-gray-50 p-3 rounded">
+                    <p class="text-sm text-gray-600">Account Created</p>
+                    <p class="font-semibold" id="userCreatedAt"></p>
+                </div>
+            </div>
+        </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">Tickets</h2>
+                <ul id="userTicketsList" class="space-y-2"></ul>
+            </div>
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">NFTs Owned</h2>
+                <p class="text-3xl font-bold" id="nftCount"></p>
+            </div>
+        </div>
+
+        <div class="bg-white shadow rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Actions</h2>
+            <div class="flex flex-wrap gap-4">
+                <button id="editUserButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                    <i class="fas fa-edit mr-2"></i>Edit User
+                </button>
+                <button id="resetPasswordButton" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                    <i class="fas fa-key mr-2"></i>Reset Password
+                </button>
+                <button id="disableAccountButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                    <i class="fas fa-user-slash mr-2"></i>Disable Account
+                </button>
+            </div>
+        </div>
+
+        <div class="flex justify-center space-x-4">
+            <button id="goBack" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Users List
+            </button>
+            <button id="goToDashboard" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+                <i class="fas fa-tachometer-alt mr-2"></i>Back to Dashboard
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/admin-view-user.js"></script>
+</body>
+</html>
+
+    <script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+        console.error('No admin token found');
+        alert('You are not logged in. Redirecting to login page.');
         window.location.href = '/admin';
         return;
-      }
+    }
 
-      const userId = window.location.pathname.split('/').pop();
-      const response = await fetch(`/api/users/${userId}`, {
-        method: 'GET',
-        headers: {
-          'x-access-token': token
-        }
-      });
+    const userId = window.location.pathname.split('/').pop();
+    console.log('Fetching details for user ID:', userId);
 
-      if (!response.ok) {
-        alert('Failed to fetch user details');
-        return;
-      }
-
-      const user = await response.json();
-      document.getElementById('userName').textContent = user.name;
-      document.getElementById('userEmail').textContent = user.email;
-      document.getElementById('userRole').textContent = user.role;
-      document.getElementById('userFollowersCount').textContent = user.followers.length;
-      document.getElementById('userFollowingCount').textContent = user.following.length;
-      
-      if (user.profilePhoto) {
-        document.getElementById('profilePhoto').src = user.profilePhoto;
-      }
-
-      const followersList = document.getElementById('userFollowersList');
-      user.followers.forEach(follower => {
-        const li = document.createElement('li');
-        li.textContent = `${follower.name} (${follower.email})`;
-        followersList.appendChild(li);
-      });
-
-      const followingList = document.getElementById('userFollowingList');
-      user.following.forEach(following => {
-        const li = document.createElement('li');
-        li.textContent = `${following.name} (${following.email})`;
-        followingList.appendChild(li);
-      });
-
-      document.getElementById('followButton').addEventListener('click', async function() {
-        try {
-          const response = await fetch(`/api/follow/${userId}/follow`, {
-            method: 'POST',
+    try {
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: 'GET',
             headers: {
-              'x-access-token': token,
-              'Content-Type': 'application/json'
+                'x-access-token': token
             }
-          });
+        });
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message);
-          }
+        console.log('Response status:', response.status);
 
-          const result = await response.json();
-          alert(result.message);
-          window.location.reload();
-        } catch (error) {
-          console.error('Error:', error);
-          alert('Failed to follow user: ' + error.message);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Response not OK. Status:', response.status, 'Error:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
-      });
 
-      document.getElementById('unfollowButton').addEventListener('click', async function() {
-        try {
-          const response = await fetch(`/api/follow/${userId}/unfollow`, {
-            method: 'POST',
-            headers: {
-              'x-access-token': token,
-              'Content-Type': 'application/json'
-            }
-          });
+        const user = await response.json();
+        console.log('User data received:', user);
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message);
-          }
-
-          const result = await response.json();
-          alert(result.message);
-          window.location.reload();
-        } catch (error) {
-          console.error('Error:', error);
-          alert('Failed to unfollow user: ' + error.message);
+        // Populate user data
+        document.getElementById('userName').textContent = user.name || 'N/A';
+        document.getElementById('userEmail').textContent = user.email || 'N/A';
+        document.getElementById('userRole').textContent = user.role || 'N/A';
+        document.getElementById('userId').textContent = user._id || 'N/A';
+        document.getElementById('userCreatedAt').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A';
+        
+        if (user.profilePhoto) {
+            document.getElementById('profilePhoto').src = user.profilePhoto;
         }
-      });
 
-      document.getElementById('goBack').addEventListener('click', function() {
-        window.location.href = '/admin/users';
-      });
+        // Render tickets
+        const ticketsList = document.getElementById('userTicketsList');
+        if (user.tickets && user.tickets.length > 0) {
+            user.tickets.forEach(ticket => {
+                const li = document.createElement('li');
+                li.className = 'bg-gray-50 p-2 rounded flex justify-between items-center';
+                li.innerHTML = `
+                    <span>${ticket.eventName || 'Unknown Event'}</span>
+                    <span class="text-sm text-gray-500">${ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString() : 'N/A'}</span>
+                `;
+                ticketsList.appendChild(li);
+            });
+        } else {
+            ticketsList.innerHTML = '<p class="text-gray-500">No tickets purchased</p>';
+        }
 
-      document.getElementById('goToDashboard').addEventListener('click', function() {
-        window.location.href = '/admin/dashboard';
-      });
+        // Render NFTs count
+        document.getElementById('nftCount').textContent = user.nftImagesCount || 0;
+
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        alert(`Failed to load user details. Error: ${error.message}`);
+    }
+
+    // Add event listeners for action buttons
+    document.getElementById('editUserButton').addEventListener('click', () => {
+        window.location.href = `/admin/users/edit/${userId}`;
     });
-  </script>
+
+    document.getElementById('resetPasswordButton').addEventListener('click', async () => {
+        if (confirm('Are you sure you want to reset the user\'s password?')) {
+            // Implement password reset logic here
+            alert('Password reset functionality to be implemented');
+        }
+    });
+
+    document.getElementById('disableAccountButton').addEventListener('click', async () => {
+        if (confirm('Are you sure you want to disable this user account?')) {
+            // Implement account disable logic here
+            alert('Account disable functionality to be implemented');
+        }
+    });
+
+    document.getElementById('goBack').addEventListener('click', () => window.location.href = '/admin/users');
+    document.getElementById('goToDashboard').addEventListener('click', () => window.location.href = '/admin/dashboard');
+});
+</script>
 </body>
 </html>

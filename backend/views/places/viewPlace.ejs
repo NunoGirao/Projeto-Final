@@ -1,104 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>View Place</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 600px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    div {
-      text-align: left;
-      margin-top: 20px;
-    }
-
-    p {
-      color: #666;
-      margin: 10px 0;
-    }
-
-    strong {
-      color: #333;
-    }
-
-    button {
-      background-color: #007BFF;
-      color: #ffffff;
-      border: none;
-      padding: 10px 20px;
-      margin: 20px 0;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Localização</h1>
-    <div>
-      <p><strong>Nome:</strong> <span id="placeName"></span></p>
-      <p><strong>Morada:</strong> <span id="placeAddress"></span></p>
-      <p><strong>Categoria:</strong> <span id="placeCategory"></span></p>
-      <p><strong>Latitude:</strong> <span id="placeLatitude"></span></p>
-      <p><strong>Longitude:</strong> <span id="placeLongitude"></span></p>
-    </div>
-    <button id="goBack">Voltar</button>
-  </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
-
-      const placeId = window.location.pathname.split('/').pop();
-      const response = await fetch(`/api/places/${placeId}`, {
-        method: 'GET',
-        headers: {
-          'x-access-token': token
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ver Localização</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-      });
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-md fade-in">
+        <div>
+            <h1 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Localização</h1>
+        </div>
+        <div class="mt-8 space-y-6">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Nome</dt>
+                    <dd id="placeName" class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"></dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Morada</dt>
+                    <dd id="placeAddress" class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"></dd>
+                </div>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Categoria</dt>
+                    <dd id="placeCategory" class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"></dd>
+                </div>
+                <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Latitude</dt>
+                    <dd id="placeLatitude" class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"></dd>
+                </div>
+                <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Longitude</dt>
+                    <dd id="placeLongitude" class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"></dd>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-center mt-6">
+            <button id="goBack" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Voltar para a lista de lugares
+            </button>
+        </div>
+    </div>
 
-      const place = await response.json();
-      document.getElementById('placeName').textContent = place.name;
-      document.getElementById('placeAddress').textContent = place.address;
-      document.getElementById('placeCategory').textContent = place.category;
-      document.getElementById('placeLatitude').textContent = place.latitude;
-      document.getElementById('placeLongitude').textContent = place.longitude;
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-      document.getElementById('goBack').addEventListener('click', function() {
-        window.location.href = '/admin/places';
-      });
-    });
-  </script>
+            const placeId = window.location.pathname.split('/').pop();
+            
+            try {
+                const response = await fetch(`/api/places/${placeId}`, {
+                    method: 'GET',
+                    headers: {
+                        'x-access-token': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch place details');
+                }
+
+                const place = await response.json();
+                document.getElementById('placeName').textContent = place.name;
+                document.getElementById('placeAddress').textContent = place.address;
+                document.getElementById('placeCategory').textContent = place.category;
+                document.getElementById('placeLatitude').textContent = place.latitude;
+                document.getElementById('placeLongitude').textContent = place.longitude;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load place details. Please try again.');
+            }
+
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = '/admin/places';
+            });
+        });
+    </script>
 </body>
 </html>

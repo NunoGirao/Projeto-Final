@@ -1,149 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Edit Place</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 600px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    label {
-      color: #666;
-      margin-top: 10px;
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button {
-      background-color: #007BFF;
-      color: #ffffff;
-      border: none;
-      padding: 10px 20px;
-      margin: 20px 0;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .back-button {
-      background-color: #6c757d;
-    }
-
-    .back-button:hover {
-      background-color: #5a6268;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Lugar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Editar Lugar</h1>
-    <form id="editPlaceForm">
-      <label for="placeName">Nome:</label>
-      <input type="text" id="placeName" required>
-      <label for="placeAddress">Morada:</label>
-      <input type="text" id="placeAddress" required>
-      <label for="placeCategory">Categoria:</label>
-      <input type="text" id="placeCategory" required>
-      <label for="placeLatitude">Latitude:</label>
-      <input type="text" id="placeLatitude" required>
-      <label for="placeLongitude">Longitude:</label>
-      <input type="text" id="placeLongitude" required>
-      <button type="submit">Guardar alterações</button>
-    </form>
-    <button id="goBack" class="back-button">Voltar a lugares</button>
-  </div>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-md fade-in">
+        <div>
+            <h1 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Editar Lugar</h1>
+        </div>
+        <form id="editPlaceForm" class="mt-8 space-y-6">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="placeName" class="sr-only">Nome</label>
+                    <input id="placeName" name="placeName" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Nome">
+                </div>
+                <div>
+                    <label for="placeAddress" class="sr-only">Morada</label>
+                    <input id="placeAddress" name="placeAddress" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Morada">
+                </div>
+                <div>
+                    <label for="placeCategory" class="sr-only">Categoria</label>
+                    <input id="placeCategory" name="placeCategory" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Categoria">
+                </div>
+                <div>
+                    <label for="placeLatitude" class="sr-only">Latitude</label>
+                    <input id="placeLatitude" name="placeLatitude" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Latitude">
+                </div>
+                <div>
+                    <label for="placeLongitude" class="sr-only">Longitude</label>
+                    <input id="placeLongitude" name="placeLongitude" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Longitude">
+                </div>
+            </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-save"></i>
+                    </span>
+                    Guardar Alterações
+                </button>
+            </div>
+        </form>
+        <div class="text-center">
+            <button id="goBack" class="font-medium text-indigo-600 hover:text-indigo-500">
+                <i class="fas fa-arrow-left mr-2"></i>Voltar para a lista de lugares
+            </button>
+        </div>
+    </div>
 
-      const placeId = window.location.pathname.split('/').pop();
-      const response = await fetch(`/api/places/${placeId}`, {
-        method: 'GET',
-        headers: {
-          'x-access-token': token
-        }
-      });
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-      const place = await response.json();
-      document.getElementById('placeName').value = place.name;
-      document.getElementById('placeAddress').value = place.address;
-      document.getElementById('placeCategory').value = place.category;
-      document.getElementById('placeLatitude').value = place.latitude;
-      document.getElementById('placeLongitude').value = place.longitude;
+            const placeId = window.location.pathname.split('/').pop();
 
-      document.getElementById('editPlaceForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const name = document.getElementById('placeName').value;
-        const address = document.getElementById('placeAddress').value;
-        const category = document.getElementById('placeCategory').value;
-        const latitude = document.getElementById('placeLatitude').value;
-        const longitude = document.getElementById('placeLongitude').value;
+            try {
+                const response = await fetch(`/api/places/${placeId}`, {
+                    method: 'GET',
+                    headers: {
+                        'x-access-token': token
+                    }
+                });
 
-        const response = await fetch(`/api/places/${placeId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-access-token': token
-          },
-          body: JSON.stringify({ name, address, category, latitude, longitude })
+                if (!response.ok) {
+                    throw new Error('Failed to fetch place details');
+                }
+
+                const place = await response.json();
+                document.getElementById('placeName').value = place.name;
+                document.getElementById('placeAddress').value = place.address;
+                document.getElementById('placeCategory').value = place.category;
+                document.getElementById('placeLatitude').value = place.latitude;
+                document.getElementById('placeLongitude').value = place.longitude;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to load place details. Please try again.');
+            }
+
+            document.getElementById('editPlaceForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const name = document.getElementById('placeName').value;
+                const address = document.getElementById('placeAddress').value;
+                const category = document.getElementById('placeCategory').value;
+                const latitude = document.getElementById('placeLatitude').value;
+                const longitude = document.getElementById('placeLongitude').value;
+
+                try {
+                    const response = await fetch(`/api/places/${placeId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-access-token': token
+                        },
+                        body: JSON.stringify({ name, address, category, latitude, longitude })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to update place');
+                    }
+
+                    const data = await response.json();
+                    if (data._id) {
+                        alert('Lugar atualizado com sucesso!');
+                        window.location.href = '/admin/places';
+                    } else {
+                        throw new Error('Failed to update place');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Falha ao atualizar o lugar. Por favor, tente novamente.');
+                }
+            });
+
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = '/admin/places';
+            });
         });
-
-        const data = await response.json();
-        if (data._id) {
-          alert('Place updated successfully!');
-          window.location.href = '/admin/places';
-        } else {
-          alert('Failed to update place.');
-        }
-      });
-
-      document.getElementById('goBack').addEventListener('click', function() {
-        window.location.href = '/admin/places';
-      });
-    });
-  </script>
+    </script>
 </body>
 </html>

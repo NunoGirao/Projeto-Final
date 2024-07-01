@@ -1,126 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Users</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Utilizadores Administrativos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
 </head>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f4f4;
-  }
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 fade-in">Utilizadores Administrativos</h1>
+        
+        <div class="mb-6 fade-in">
+            <input type="text" id="searchBar" placeholder="Procurar utilizadores..." class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        
+        <div class="flex space-x-4 mb-6 fade-in">
+            <button id="goToCreateUser" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-plus mr-2"></i>Criar Utilizador
+            </button>
+            <button id="goToDashboard" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-tachometer-alt mr-2"></i>Voltar ao Painel
+            </button>
+        </div>
 
-  h1 {
-    color: #333;
-    margin-bottom: 20px;
-    text-align: center;
-  }
+        <h2 class="text-2xl font-semibold text-gray-700 mb-4 fade-in">Todos os Utilizadores</h2>
+        <ul id="usersList" class="space-y-4 fade-in"></ul>
+    </div>
 
-  h2 {
-    color: #555;
-    margin-bottom: 10px;
-  }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-  button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-bottom: 10px;
-    transition: background-color 0.3s ease;
-  }
+            const searchBar = document.getElementById('searchBar');
+            searchBar.addEventListener('input', filterUsers);
 
-  button:hover {
-    background-color: #0056b3;
-  }
+            document.getElementById('goToCreateUser').addEventListener('click', function() {
+                window.location.href = '/admin/users/create';
+            });
+            document.getElementById('goToDashboard').addEventListener('click', function() {
+                window.location.href = '/admin/dashboard';
+            });
 
-  ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
+            async function fetchUsers() {
+                try {
+                    const response = await fetch('/api/admin/users', {
+                        method: 'GET',
+                        headers: {
+                            'x-access-token': token
+                        }
+                    });
 
-  li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    background-color: white;
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch users');
+                    }
 
-  a {
-    text-decoration: none;
-    color: #333;
-  }
+                    const users = await response.json();
+                    renderUsers(users);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to fetch users. Please try again.');
+                }
+            }
 
-  a:hover {
-    text-decoration: underline;
-  }
+            function renderUsers(users) {
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = users.map(user => `
+                    <li class="bg-white shadow-md rounded-lg p-4 flex justify-between items-center">
+                        <a href="/admin/users/view/${user._id}" class="text-blue-600 hover:text-blue-800 font-semibold">
+                            ${user.name} (${user.email})
+                        </a>
+                        <div class="space-x-2">
+                            <button onclick="editUser('${user._id}')" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded">
+                                <i class="fas fa-edit mr-1"></i>Editar
+                            </button>
+                        </div>
+                    </li>
+                `).join('');
+            }
 
-  #goToDashboard {
-    margin-top: 20px;
-    align-self: flex-start;
-  }
-</style>
-<body>
-  <h1>Utilizadores Administrativos</h1>
+            function filterUsers() {
+                const query = searchBar.value.toLowerCase();
+                const users = document.querySelectorAll('#usersList li');
+                users.forEach(user => {
+                    const text = user.textContent.toLowerCase();
+                    user.style.display = text.includes(query) ? '' : 'none';
+                });
+            }
 
-  <h2>Todos os Utilizadores</h2>
-  <button id="fetchUsers">Procurar Utilizadores</button>
-  <ul id="usersList"></ul>
+            window.editUser = function(id) {
+                window.location.href = `/admin/users/edit/${id}`;
+            };
 
-  <button id="goToDashboard">Voltar ao Painel</button>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
-
-      document.getElementById('fetchUsers').addEventListener('click', fetchUsers);
-      document.getElementById('goToDashboard').addEventListener('click', function() {
-        window.location.href = '/admin/dashboard';
-      });
-
-      async function fetchUsers() {
-        const response = await fetch('/api/admin/users', {
-          method: 'GET',
-          headers: {
-            'x-access-token': token
-          }
+            fetchUsers();
         });
-
-        const users = await response.json();
-        const usersList = document.getElementById('usersList');
-        usersList.innerHTML = '';
-        users.forEach(user => {
-          const li = document.createElement('li');
-          const link = document.createElement('a');
-          link.href = `/admin/users/view/${user._id}`;
-          link.textContent = `${user.name} (${user.email})`;
-          li.appendChild(link);
-          const button = document.createElement('button');
-          button.textContent = 'Edit';
-          button.onclick = function() { editUser(user._id); };
-          li.appendChild(button);
-          usersList.appendChild(li);
-        });
-      }
-
-      window.editUser = function(id) {
-        window.location.href = `/admin/users/edit/${id}`;
-      };
-
-      fetchUsers();
-    });
-  </script>
+    </script>
 </body>
 </html>

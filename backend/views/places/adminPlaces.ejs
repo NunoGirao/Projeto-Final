@@ -1,164 +1,112 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Places</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 600px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #333;
-    }
-
-    h2 {
-      color: #666;
-      margin-top: 20px;
-    }
-
-    button {
-      background-color: #007BFF;
-      color: #ffffff;
-      border: none;
-      padding: 10px 20px;
-      margin: 10px 0;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    li {
-      margin: 10px 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    a {
-      color: #070707;
-      text-decoration: none;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .button-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .edit-button {
-      margin-left: 20px;
-    }
-
-    @media (min-width: 600px) {
-      .button-container {
-        flex-direction: row;
-        justify-content: space-around;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Places</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
 </head>
-<body>
-  <div class="container">
-    <h1>Lugares administrativos</h1>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8 fade-in">Localização Administrativos</h1>
+        
+        <div class="mb-6 fade-in">
+            <input type="text" id="searchBar" placeholder="Procurar lugares..." class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        
+        <div class="flex space-x-4 mb-6 fade-in">
+            <button id="goToCreatePlace" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-plus mr-2"></i>Criar Localização
+            </button>
+            <button id="goToDashboard" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                <i class="fas fa-tachometer-alt mr-2"></i>Voltar ao Painel
+            </button>
+        </div>
 
-    <div class="section">
-      <h2>Todos os lugares</h2>
-      <button id="fetchPlaces">Procurar lugares</button>
-      <ul id="placesList"></ul>
+        <h2 class="text-2xl font-semibold text-gray-700 mb-4 fade-in">Todas as Localizações</h2>
+        <ul id="placesList" class="space-y-4 fade-in"></ul>
     </div>
 
-    <div class="section">
-      <h2>Criar novo lugar</h2>
-      <button id="goToCreatePlace">Criar lugar</button>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                window.location.href = '/admin';
+                return;
+            }
 
-    <div class="section">
-      <button id="goToDashboard">Voltar ao painel</button>
-    </div>
-  </div>
+            const searchBar = document.getElementById('searchBar');
+            searchBar.addEventListener('input', filterPlaces);
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) {
-        window.location.href = '/admin';
-        return;
-      }
+            document.getElementById('goToCreatePlace').addEventListener('click', function() {
+                window.location.href = '/admin/places/create';
+            });
+            document.getElementById('goToDashboard').addEventListener('click', function() {
+                window.location.href = '/admin/dashboard';
+            });
 
-      document.getElementById('fetchPlaces').addEventListener('click', fetchPlaces);
-      document.getElementById('goToCreatePlace').addEventListener('click', function() {
-        window.location.href = '/admin/places/create';
-      });
+            async function fetchPlaces() {
+                try {
+                    const response = await fetch('/api/places', {
+                        method: 'GET',
+                        headers: {
+                            'x-access-token': token
+                        }
+                    });
 
-      document.getElementById('goToDashboard').addEventListener('click', function() {
-        window.location.href = '/admin/dashboard';
-      });
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch places');
+                    }
 
-      async function fetchPlaces() {
-        const response = await fetch('/api/places', {
-          method: 'GET',
-          headers: {
-            'x-access-token': token
-          }
+                    const places = await response.json();
+                    renderPlaces(places);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to fetch places. Please try again.');
+                }
+            }
+
+            function renderPlaces(places) {
+                const placesList = document.getElementById('placesList');
+                placesList.innerHTML = places.map(place => `
+                    <li class="bg-white shadow-md rounded-lg p-4 flex justify-between items-center">
+                        <a href="/admin/places/view/${place._id}" class="text-blue-600 hover:text-blue-800 font-semibold">
+                            ${place.name} (${place.address}) - ${place.category}
+                        </a>
+                        <div class="space-x-2">
+                            <button onclick="editPlace('${place._id}')" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded">
+                                <i class="fas fa-edit mr-1"></i>Editar
+                            </button>
+                        </div>
+                    </li>
+                `).join('');
+            }
+
+            function filterPlaces() {
+                const query = searchBar.value.toLowerCase();
+                const places = document.querySelectorAll('#placesList li');
+                places.forEach(place => {
+                    const text = place.textContent.toLowerCase();
+                    place.style.display = text.includes(query) ? '' : 'none';
+                });
+            }
+
+            window.editPlace = function(id) {
+                window.location.href = `/admin/places/edit/${id}`;
+            };
+
+            fetchPlaces();
         });
-
-        const places = await response.json();
-        const placesList = document.getElementById('placesList');
-        placesList.innerHTML = '';
-        places.forEach(place => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            <div>
-              <a href="/admin/places/view/${place._id}">${place.name} (${place.address}) - ${place.category}</a>
-            </div>
-            <button class="edit-button" onclick="editPlace('${place._id}')">Edit</button>`;
-          placesList.appendChild(li);
-        });
-      }
-
-      window.editPlace = function(id) {
-        window.location.href = `/admin/places/edit/${id}`;
-      };
-
-      fetchPlaces();
-    });
-  </script>
+    </script>
 </body>
 </html>

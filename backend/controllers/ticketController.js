@@ -1,5 +1,3 @@
-// controllers/ticketController.js
-
 const Event = require('../models/Event');
 const User = require('../models/User');
 const QRCode = require('qrcode');
@@ -24,20 +22,24 @@ ticketController.purchaseTicket = async (req, res) => {
       return res.status(400).json({ message: "No tickets available" });
     }
 
-    const qrData = `${userId}-${eventId}-${new Date().toISOString()}`;
-    const qrCode = await QRCode.toDataURL(qrData);
-
     const ticket = {
       user: userId,
-      qrCode: qrCode
+      purchaseDate: new Date()
     };
 
     event.tickets.push(ticket);
     event.occupation += 1;
     await event.save();
 
+    const ticketId = event.tickets[event.tickets.length - 1]._id;  // Get the newly created ticket ID
+    const qrData = `${userId}-${eventId}-${ticketId}`;
+    const qrCode = await QRCode.toDataURL(qrData);
+
+    event.tickets[event.tickets.length - 1].qrCode = qrCode;
+    await event.save();
+
     console.log(`Ticket purchased successfully: ${JSON.stringify(ticket)}`);
-    res.status(200).json({ message: "Ticket purchased successfully", qrCode, ticketId: ticket._id });
+    res.status(200).json({ message: "Ticket purchased successfully", qrCode, ticketId });
   } catch (err) {
     console.error('Error purchasing ticket:', err);
     res.status(500).json({ message: "Error purchasing ticket: " + err.message });
@@ -49,26 +51,27 @@ ticketController.getUserTickets = async (req, res) => {
     const userId = req.user._id;
     const events = await Event.find({ 'tickets.user': userId }).populate('place');
 
-    // Add QR codes to the response
     const tickets = events.flatMap(event => 
-      event.tickets.filter(ticket => ticket.user.equals(userId)).map(ticket => ({
+      event.tickets.filter(ticket => ticket.user.equals(userId) && !ticket.redeemed).map(ticket => ({
         ...ticket.toObject(),
         eventName: event.name,
         eventDate: event.date,
         eventPlace: event.place.name,
         eventDescription: event.description,
-        image: event.image,
-        price: event.price,
-        occupation: event.occupation,
-        capacity: event.capacity,
-        type: event.category,
-        subtype: event.subcategory
+        eventImage: event.image,
+        eventPrice: event.price,
+        eventOccupation: event.occupation,
+        eventCapacity: event.capacity,
+        eventCategory: event.category,
+        eventSubcategory: event.subcategory,
+        nftImage: event.nftImage
       }))
     );
 
     res.status(200).json(tickets);
   } catch (err) {
-    res.status(500).json({ message: "Error retrieving tickets: " + err.message });
+    console.error('Error retrieving user tickets:', err);
+    res.status(500).json({ message: "Error retrieving user tickets: " + err.message });
   }
 };
 
@@ -100,25 +103,31 @@ ticketController.searchTickets = async (req, res) => {
 ticketController.getTicketsByUserId = async (req, res) => {
   try {
     const userId = req.params.id;
+    console.log(`Fetching tickets for user ID: ${userId}`);
     
-    // Find events where the user has purchased tickets
     const events = await Event.find({ 'tickets.user': userId }).populate('place');
 
-    // Add QR codes to the response
-    const eventsWithQrCodes = await Promise.all(events.map(async (event) => {
-      const ticket = event.tickets.find(ticket => ticket.user.toString() === userId.toString());
-      const qrData = `${userId}-${event._id}-${ticket.purchaseDate}`;
-      const qrCode = await QRCode.toDataURL(qrData);
-      return {
-        ...event._doc,
-        qrCode,
-        nftImage: event.nftImage // Add the nftImage to the response
-      };
-    }));
+    const tickets = events.flatMap(event => 
+      event.tickets.filter(ticket => ticket.user.equals(userId)).map(ticket => ({
+        ...ticket.toObject(),
+        eventName: event.name,
+        eventDate: event.date,
+        eventPlace: event.place.name,
+        eventDescription: event.description,
+        eventImage: event.image,
+        eventPrice: event.price,
+        eventOccupation: event.occupation,
+        eventCapacity: event.capacity,
+        eventCategory: event.category,
+        eventSubcategory: event.subcategory,
+        nftImage: event.nftImage
+      }))
+    );
 
-    res.status(200).json(eventsWithQrCodes);
+    res.status(200).json(tickets);
   } catch (err) {
-    res.status500().json({ message: "Error retrieving tickets: " + err.message });
+    console.error('Error retrieving user tickets:', err);
+    res.status(500).json({ message: "Error retrieving user tickets: " + err.message });
   }
 };
 
@@ -149,7 +158,7 @@ ticketController.getTicketById = async (req, res) => {
     }
 
     // If ticket is found and belongs to the user, include the QR code and other details
-    const qrData = `${userId}-${event._id}-${ticket.purchaseDate}`;
+    const qrData = `${userId}-${event._id}-${ticket._id}`;
     const qrCode = await QRCode.toDataURL(qrData);
 
     res.status(200).json({
@@ -176,32 +185,51 @@ ticketController.getTicketById = async (req, res) => {
 ticketController.redeemTicket = async (req, res) => {
   try {
     const { qrData } = req.body;
-    const userId = req.user.id;
+    const userId = req.user._id;
 
-    // Find the ticket based on qrData
-    const [ticketUserId, eventId, purchaseDate] = qrData.split('-');
-    if (userId !== ticketUserId) {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
+    console.log(`Redeeming ticket with QR data: ${qrData} for user ID: ${userId}`);
+
+    const [ticketUserId, eventId, ticketId] = qrData.split('-');
 
     const event = await Event.findById(eventId);
     if (!event) {
+      console.log("Event not found");
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const ticket = event.tickets.find(t => t.user.toString() === userId && t.purchaseDate.toISOString() === purchaseDate);
+    console.log(`Event found: ${event.name}`);
+
+    const ticket = event.tickets.id(ticketId);
+
     if (!ticket) {
+      console.log("Ticket not found");
       return res.status(404).json({ message: 'Ticket not found' });
     }
 
-    // Add the nftImage to the user's profile
-    const user = await User.findById(userId);
+    if (ticket.redeemed) {
+      console.log("Ticket already redeemed");
+      return res.status(400).json({ message: 'Ticket already redeemed' });
+    }
+
+    console.log("Ticket found");
+
+    if (req.user.role !== 'Admin' && userId.toString() !== ticketUserId) {
+      console.log("Unauthorized: User ID does not match and user is not an admin");
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(ticketUserId);
     if (!user) {
+      console.log("User not found");
       return res.status(404).json({ message: 'User not found' });
     }
 
+    console.log(`Adding NFT image to user ${user._id}`);
     user.nftImages.push(event.nftImage);
     await user.save();
+
+    ticket.redeemed = true;
+    await event.save();
 
     res.status(200).json({ message: 'Ticket redeemed successfully', nftImage: event.nftImage });
   } catch (error) {
